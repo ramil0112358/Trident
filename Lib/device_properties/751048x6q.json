@@ -1,0 +1,10 @@
+{
+  "terminal_basic_prompt": ">",
+  "terminal_exec_prompt": "#",
+  "console_connect_expectations": "['#', '--More--', 'login:']",
+  "telnet_connect_expectation1": "login",
+  "telnet_connect_expectation2": "Password",
+  "ssh_connect_expectation1": " login as",
+  "ssh_connect_expectation2": "password",
+  "terminal_exec_command": "enable"
+}

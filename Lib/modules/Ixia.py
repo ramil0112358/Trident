@@ -130,6 +130,8 @@ class Ixia():
                     topology = self.get_topology_by_name(topology_name)
                     new_device_group = topology.DeviceGroup.add(Multiplier=multiplier, Name=device_group_name)
                     self.device_group_dict[topology_name].append(new_device_group)
+                    logging.info("New device_group id instance: " + str(id(new_device_group)))
+                    logging.info("New device_group name is: " + str(new_device_group.Name))
                     #logging.info("Check for not empty dg_list: " + str(self.device_group_dict))
                     return 1
             logging.info("Can't create device group.Topology " + device_group_topology_name + " not found")
@@ -147,53 +149,41 @@ class Ixia():
     def add_protocol_ethernet(self,
                      device_group_name,
                      device_group_topology_name,
-                     enablevlan,
-                     vlancount,
-                     vlanid = None,
-                     multiplier = 1)->bool:
+                     enablevlan=False,
+                     vlancount=0,
+                     vlan_ids = None)->bool:
 
+        #vlan multitag (vlancount > 1) doesnt support yet
+        device_group_instance = None
+        logging.debug("current device_group_dict: " + str(self.device_group_dict))
         device_group_list = self.device_group_dict[device_group_topology_name]
+        logging.debug("current device_group_list: " + str(device_group_list))
         for device_group in device_group_list:
+            logging.debug("device_group: " + str(device_group))
+            logging.debug("device_group.Name: " + str(device_group.Name))
             if device_group.Name == device_group_name:
                 device_group_instance = device_group
 
-        ethernet_instance = device_group_instance.Ethernet.add(UseVlans=enablevlan, VlanCount=vlancount)
-        ethernet_instance.Vlan.find()
-        topologies_count = len(self.topology_list)
-        new_topology_mac = '00:1' + str(topologies_count) + ':00:00:00:01'
-        if multiplier == 1:
-            ethernet_instance.Mac.Single(new_topology_mac)
-            if vlanid != None:
-                ethernet_instance.Vlan.Single(vlanid)
+        if device_group_instance == None:
+            return 0
         else:
-            ethernet_instance.Mac.Increment(new_topology_mac, '00:00:00:00:00:01')
-            if vlanid != None:
-                ethernet_instance.Vlan.Increment(vlanid, '1')
-        self.ethernet_list.append(ethernet_instance)
-        return True
-
-
-
-        '''
-        # Add device_group
-        # instance.device_group_1 = instance.topology[-1].DeviceGroup.add(
-        #    Multiplier=Multiplier)
-        instance.device_groups.append(
-            instance.topology[-1].DeviceGroup.add(
-                Multiplier=Multiplier))
-
-        # Configuring Ethernet
-        # instance.ethernets = instance.device_groups[-1].Ethernet.add(
-        #    UseVlans=None,
-        #    VlanCount=None)
-        instance.ethernets.append(instance.device_groups[-1].Ethernet.add(
-            UseVlans=None,
-            VlanCount=None))
-        # instance.vlans = instance.ethernets[-1].Vlan.find()
-        instance.vlans.append(instance.ethernets[-1].Vlan.find())
-        instance.ethernets[-1].Mac.Single('00:00:00:00:00:01')
-        '''
-
+            ethernet_instance = device_group_instance.Ethernet.add(UseVlans=enablevlan, VlanCount=vlancount)
+            topologies_count = len(self.topology_list)
+            new_topology_mac = '00:1' + str(topologies_count) + ':00:00:00:01'
+            if device_group_instance.Multiplier == 1:
+                ethernet_instance.Mac.Single(new_topology_mac)
+                if vlan_ids != None:
+                    vlan_instance = ethernet_instance.Vlan.find()
+                    #logging.info("vlan_instance before: " + str(vlan_instance))
+                    vlan_instance.VlanId.Single(vlan_ids)
+                    #logging.info("vlan_instance after: " + str(vlan_instance))
+            else:
+                ethernet_instance.Mac.Increment(new_topology_mac, '00:00:00:00:00:01')
+                if vlan_ids != None:
+                    vlan_instance = ethernet_instance.Vlan.find()
+                    vlan_instance.VlanId.Increment(vlan_ids, '1')
+            self.ethernet_list.append(ethernet_instance)
+            return 1
 
     '''
     def add_protocol(instance, ProtocolData):

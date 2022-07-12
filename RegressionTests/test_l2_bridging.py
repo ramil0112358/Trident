@@ -31,6 +31,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     topology_list, topology_manager_instance, module_manager_instance = init_test_environment
     #Setup
     logging.info('Broadcast test setup')
+    '''
     #1.Create topology
     top_args = {'topology_name': 'topology1'}
     topology_manager_instance.add_topology(top_args)
@@ -60,15 +61,14 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     sesdict = module_manager_instance.connect_login_sessions_dict.items()
     logging.debug('session_dict: ' + str(sesdict))
     logging.debug('module_instance_dict: ' + str(module_manager_instance.module_instance_dict))
-    #6.Send command via session id
-    '''
-    command1_args = {'session_id': 'ses1',
-                     'command': 'conf t'}
-    module_manager_instance.module_send_send_via_sesid(command1_args)
-    command2_args = {'session_id': 'ses1',
-                     'command': 'vlan 778 bridge 1'}
-    module_manager_instance.module_send_send_via_sesid(command2_args)
-    '''
+    #6.Send command via session id  
+    #command1_args = {'session_id': 'ses1',
+    #                 'command': 'conf t'}
+    #module_manager_instance.module_send_send_via_sesid(command1_args)
+    #command2_args = {'session_id': 'ses1',
+    #                 'command': 'vlan 778 bridge 1'}
+    #module_manager_instance.module_send_send_via_sesid(command2_args)
+    
     #6.Send command via hostname
     command1a_args = {'hostname': 'node1',
                      'command': 'conf t'}
@@ -76,9 +76,9 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     #7.Send command via hostname
     command2a_args = {'hostname': 'node1',
                       'command': 'vlan 779 bridge 1'}
-
-
     module_manager_instance.module_send_send_via_hostname(command2a_args)
+    '''
+
     #8.Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")
     ixia_ixnetwork = ixia_instance.get_ixnetwork_instance()
@@ -93,11 +93,13 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     port_list2 = list()
     port_list2.append("1/2")
     assert ixia_instance.add_topology(port_list2, "Topology2") == 1
-    assert ixia_instance.add_device_group("DeviceGroup1", "Topology1", 1) == 1
-    assert ixia_instance.add_device_group("DeviceGroup1", "Topology2", 1) == 1
+    assert ixia_instance.add_device_group("DeviceGroupA", "Topology1", 1) == 1
+    assert ixia_instance.add_device_group("DeviceGroupB", "Topology2", 5) == 1
     #11.add protocols
-    #assert ixia_instance.add_protocol_ethernet("DeviceGroup1", "Topology1", False, 0, None, 1) == 1
-    #assert ixia_instance.add_protocol_ethernet("DeviceGroup1", "Topology2", False, 0, None, 1) == 1
+    vlan_list = "500"
+    assert ixia_instance.add_protocol_ethernet("DeviceGroupA", "Topology1", True, 1, vlan_list) == 1
+    vlan_list2 = "501"
+    assert ixia_instance.add_protocol_ethernet("DeviceGroupB", "Topology2", True, 1, vlan_list2) == 1
 
     yield
     #Teardown

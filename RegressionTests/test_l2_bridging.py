@@ -93,13 +93,27 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     port_list2 = list()
     port_list2.append("1/2")
     assert ixia_instance.add_topology(port_list2, "Topology2") == 1
-    assert ixia_instance.add_device_group("DeviceGroupA", "Topology1", 1) == 1
-    assert ixia_instance.add_device_group("DeviceGroupB", "Topology2", 5) == 1
+    assert ixia_instance.add_device_group("Topology1", "DeviceGroupA", 1) == 1
+    assert ixia_instance.add_device_group("Topology2", "DeviceGroupB", 5) == 1
     #11.add protocols
     vlan_list = "500"
-    assert ixia_instance.add_protocol_ethernet("DeviceGroupA", "Topology1", True, 1, vlan_list) == 1
-    vlan_list2 = "501"
-    assert ixia_instance.add_protocol_ethernet("DeviceGroupB", "Topology2", True, 1, vlan_list2) == 1
+    assert ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA", True, 1, vlan_list) == 1
+    vlan_start_value = "501"
+    assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB", True, 5, vlan_start_value) == 1
+
+    assert ixia_instance.add_protocol_ipv4("Topology1",
+                                           "DeviceGroupA",
+                                           "192.168.1.1",
+                                           "24",
+                                           "192.168.1.254",
+                                           False) == 1
+
+    assert ixia_instance.add_protocol_ipv4("Topology2",
+                                           "DeviceGroupB",
+                                           "192.168.1.100",
+                                           "24",
+                                           "192.168.1.1",
+                                           False) == 1
 
     yield
     #Teardown

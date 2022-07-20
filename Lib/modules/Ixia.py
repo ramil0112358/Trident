@@ -105,7 +105,10 @@ class Ixia():
                 return topology
         return 0
 
-    def add_device_group(self, device_group_name, device_group_topology_name, multiplier)->bool:
+    def add_device_group(self,
+                         device_group_topology_name,
+                         device_group_name,
+                         multiplier)->bool:
 
         topology_check = False
         for topology in self.topology_list:
@@ -113,7 +116,7 @@ class Ixia():
                 topology_check = True
 
         if topology_check == False:
-            logging.info("Topology " + device_group_topology_name + "not found")
+            logging.info("Topology " + device_group_topology_name + " not found")
             return 0
 
         current_device_groups = self.device_group_dict
@@ -130,8 +133,8 @@ class Ixia():
                     topology = self.get_topology_by_name(topology_name)
                     new_device_group = topology.DeviceGroup.add(Multiplier=multiplier, Name=device_group_name)
                     self.device_group_dict[topology_name].append(new_device_group)
-                    logging.info("New device_group id instance: " + str(id(new_device_group)))
-                    logging.info("New device_group name is: " + str(new_device_group.Name))
+                    logging.debug("New device_group id instance: " + str(id(new_device_group)))
+                    logging.debug("New device_group name is: " + str(new_device_group.Name))
                     #logging.info("Check for not empty dg_list: " + str(self.device_group_dict))
                     return 1
             logging.info("Can't create device group.Topology " + device_group_topology_name + " not found")
@@ -147,11 +150,11 @@ class Ixia():
         return 0
 
     def add_protocol_ethernet(self,
-                     device_group_name,
-                     device_group_topology_name,
-                     enablevlan=False,
-                     vlancount=0,
-                     vlan_ids = None)->bool:
+                    device_group_topology_name,
+                    device_group_name,
+                    enablevlan=False,
+                    vlancount=0,
+                    vlanid_first = None)->bool:
 
         #vlan multitag (vlancount > 1) doesnt support yet
         device_group_instance = None
@@ -168,90 +171,69 @@ class Ixia():
             return 0
         else:
             ethernet_instance = device_group_instance.Ethernet.add(UseVlans=enablevlan, VlanCount=vlancount)
+            #logging.info("ethernet_instance: " + str(ethernet_instance))
             topologies_count = len(self.topology_list)
             new_topology_mac = '00:1' + str(topologies_count) + ':00:00:00:01'
             if device_group_instance.Multiplier == 1:
                 ethernet_instance.Mac.Single(new_topology_mac)
-                if vlan_ids != None:
+                if vlanid_first != None:
                     vlan_instance = ethernet_instance.Vlan.find()
                     #logging.info("vlan_instance before: " + str(vlan_instance))
-                    vlan_instance.VlanId.Single(vlan_ids)
+                    vlan_instance.VlanId.Single(vlanid_first)
                     #logging.info("vlan_instance after: " + str(vlan_instance))
             else:
                 ethernet_instance.Mac.Increment(new_topology_mac, '00:00:00:00:00:01')
-                if vlan_ids != None:
+                if vlanid_first != None:
                     vlan_instance = ethernet_instance.Vlan.find()
-                    vlan_instance.VlanId.Increment(vlan_ids, '1')
-            self.ethernet_list.append(ethernet_instance)
+                    vlan_instance.VlanId.Increment(vlanid_first, '1')
+            #self.ethernet_list.append(ethernet_instance)
             return 1
 
-    '''
-    def add_protocol(instance, ProtocolData):
-        
-        #Args:
-        #    instance: (Session): A global process instance
-        #    ProtocolData  (dict): ProtocolData
-        #     amount_of_hosts = Topology.DeviceGroup.Multiplier
+    def add_protocol_ipv4(self,
+                    device_group_topology_name,
+                    device_group_name,
+                    ip_address,
+                    ip_prefix,
+                    ip_gateway,
+                    resolve_gateway) -> bool:
 
-        if len(instance.topology) == 0:
-            raise Exception('Topology not found')
-
-        if 'topology_name' in ProtocolData:
-            # check out current topology index by name
-            loop_index = 0
-            current_topology_index = 0
-            for current_topology in instance.topology:
-                if current_topology.DescriptiveName == ProtocolData['topology_name']:
-                    current_topology_index = loop_index
-                    break
-                loop_index = loop_index + 1
-
-            logging.warning('Adding {protocol} protocol to {TopologyName} topology'.format(
-                protocol=ProtocolData['protocol'],
-                TopologyName=instance.topology[current_topology_index].DescriptiveName))
-
-            # Ethernet
-            if ProtocolData['protocol'] == "ethernet":
-
-                # set vlan
-                if 'vlan' in ProtocolData:
-                    if ProtocolData['vlan'] == 'untag':
-                        instance.ethernets[current_topology_index].update(
-                            UseVlans=False,
-                            VlanCount=1)
-                    else:
-                        instance.ethernets[current_topology_index].update(
-                            UseVlans=True,
-                            VlanCount=1)
-                        instance.vlans[current_topology_index].VlanId.Single(ProtocolData['vlan'])
-                        # instance.ethernets[topology_index].Vlan.find()
-
-                # set_mac_address
-                if 'mac-address' in ProtocolData:
-                    instance.ethernets[current_topology_index].Mac.Single(ProtocolData['mac-address'])
-
-            # ipv4
-            if ProtocolData['protocol'] == "ipv4":
-
-                instance.ipv4.append(instance.ethernets[current_topology_index].Ipv4.add())
-                ipv4_instance = instance.ipv4[current_topology_index].find()
+        device_group_instance = None
+        device_group_list = self.device_group_dict[device_group_topology_name]
+        for device_group in device_group_list:
+            #logging.info("device_group_name: " + str(device_group.Name))
+            if device_group.Name == device_group_name:
+                device_group_instance = device_group
+        #logging.info("device_group_instance: " + str(device_group_instance))
+        if device_group_instance == None:
+            return 0
+        else:
+            ethernet_instance = device_group_instance.Ethernet.find()
+            ipv4_instance = ethernet_instance.Ipv4.add()
+            #logging.info("Multiplier: " + str(device_group_instance.Multiplier))
+            if device_group_instance.Multiplier == 1:
                 ip_address_list = list()
-                ip_gateway_list = list()
                 ip_prefix_list = list()
+                ip_gateway_list = list()
+                resolve_gateway_list = list()
+                #logging.info("Multiplier == 1")
+                ip_address_list.append(ip_address)
+                ipv4_instance.Address.ValueList(ip_address_list)
+                ip_prefix_list.append(ip_prefix)
+                ipv4_instance.Prefix.ValueList(ip_prefix_list)
+                ip_gateway_list.append(ip_gateway)
+                ipv4_instance.GatewayIp.ValueList(ip_gateway_list)
+                resolve_gateway_list.append(resolve_gateway)
+                ipv4_instance.ResolveGateway.ValueList(resolve_gateway_list)
+            else:
+                #logging.info("Multiplier != 1")
+                ipv4_instance.Address.Increment(ip_address,"0.0.0.1")
+                ipv4_instance.GatewayIp.Single(ip_gateway)
+                ipv4_instance.Prefix.Single(ip_prefix)
+                ipv4_instance.ResolveGateway.Single(resolve_gateway)
+            return 1
+        return 0
 
-                # set ipv4 values
-                if 'ip-address' in ProtocolData:
-                    ip_address_list.append(ProtocolData['ip-address'])
-                    ipv4_instance.Address.ValueList(ip_address_list)
 
-                if 'ip-gateway' in ProtocolData:
-                    ip_gateway_list.append(ProtocolData['ip-gateway'])
-                    ipv4_instance.GatewayIp.ValueList(ip_gateway_list)
-
-                if 'ip_prefix' in ProtocolData:
-                    ip_prefix_list.append(ProtocolData['ip_prefix'])
-                    ipv4_instance.Prefix.ValueList(ip_prefix_list)
-    '''
 
 
 

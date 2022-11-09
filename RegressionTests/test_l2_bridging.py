@@ -84,36 +84,46 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     ixia_ixnetwork = ixia_instance.get_ixnetwork_instance()
     #9.init new scenario with ports(
     ixia_instance.add_scenario()
-    ixia_instance.add_interface_to_scenario("1/1")
-    ixia_instance.add_interface_to_scenario("1/2")
+    ixia_instance.add_interface_to_scenario("1/7")
+    ixia_instance.add_interface_to_scenario("2/2")
     #10.add topology to scenario
     port_list = list()
-    port_list.append("1/1")
+    port_list.append("1/7")
     assert ixia_instance.add_topology(port_list, "Topology1") == 1
     port_list2 = list()
-    port_list2.append("1/2")
+    port_list2.append("2/2")
     assert ixia_instance.add_topology(port_list2, "Topology2") == 1
     assert ixia_instance.add_device_group("Topology1", "DeviceGroupA", 1) == 1
     assert ixia_instance.add_device_group("Topology2", "DeviceGroupB", 5) == 1
     #11.add protocols
+    '''
     vlan_list = "500"
     assert ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA", True, 1, vlan_list) == 1
     vlan_start_value = "501"
     assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB", True, 5, vlan_start_value) == 1
+    '''
+    assert ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA") == 1
+    assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB") == 1
+
 
     assert ixia_instance.add_protocol_ipv4("Topology1",
                                            "DeviceGroupA",
                                            "192.168.1.1",
                                            "24",
-                                           "192.168.1.254",
-                                           False) == 1
+                                           "192.168.1.2",
+                                           True) == 1
 
     assert ixia_instance.add_protocol_ipv4("Topology2",
                                            "DeviceGroupB",
-                                           "192.168.1.100",
-                                           "24",
                                            "192.168.1.1",
-                                           False) == 1
+                                           "24",
+                                           "192.168.1.2",
+                                           True) == 1
+
+    ixia_instance.start_all_protocols()
+
+    #ixia_instance.add_traffic_item("L2", "Raw", "Data")
+
 
     yield
     #Teardown

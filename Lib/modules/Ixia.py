@@ -172,8 +172,10 @@ class Ixia():
         else:
             ethernet_instance = device_group_instance.Ethernet.add(UseVlans=enablevlan, VlanCount=vlancount)
             #logging.info("ethernet_instance: " + str(ethernet_instance))
-            topologies_count = len(self.topology_list)
-            new_topology_mac = '00:1' + str(topologies_count) + ':00:00:00:01'
+            #topologies_count = len(self.topology_list)
+            topology_instance = self.get_topology_by_name(device_group_topology_name)
+            topology_index = self.topology_list.index(topology_instance)
+            new_topology_mac = '00:1' + str(topology_index + 1) + ':00:00:00:01'
             if device_group_instance.Multiplier == 1:
                 ethernet_instance.Mac.Single(new_topology_mac)
                 if vlanid_first != None:
@@ -232,6 +234,48 @@ class Ixia():
                 ipv4_instance.ResolveGateway.Single(resolve_gateway)
             return 1
         return 0
+
+    def add_traffic_item(self,
+                         ti_name,
+                         ti_type,
+                         ti_data) -> bool:
+
+        """
+        ti_name: (str) traffic item name
+        ti_type: (str) "Raw"/"ethernetVlan"/"ipv4"
+        ti_data: (dict)
+        ti_data for type Raw:
+            {"source_port":"1/1",
+             "dest_port":"1/2",
+             "framerate_type":"framePerSecond",
+             "framerate_value":"100",
+             "frame_size":"1400",
+             "bidir":0,
+             "control_type:"continuous"}
+        ti_data for type ethernet:
+            {"source_device_group":"DeviceGroupA",
+             "dest_device_group":"DeviceGroupB",
+             "framerate_type":"framePerSecond",
+             "framerate_value":"100",
+             "frame_size":"1400",
+             "bidir":0,
+             "control_type:"continuous"}
+        ti_data for type ipv4:
+            
+
+
+        """
+
+
+        '''
+        if ti_type == "Raw":
+            source_port =
+        '''
+        logging.info("Ports: " + str(self.ixia_ixnetwork.Vport.find()))
+        return 1
+
+    def start_all_protocols(self) -> bool:
+        self.ixia_ixnetwork.StartAllProtocols()
 
 
 

@@ -115,9 +115,9 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
 
     assert ixia_instance.add_protocol_ipv4("Topology2",
                                            "DeviceGroupB",
-                                           "192.168.1.1",
-                                           "24",
                                            "192.168.1.2",
+                                           "24",
+                                           "192.168.1.1",
                                            True) == 1
 
     ixia_instance.start_all_protocols()

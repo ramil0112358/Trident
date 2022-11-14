@@ -122,7 +122,17 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
 
     ixia_instance.start_all_protocols()
 
-    #ixia_instance.add_traffic_item("L2", "Raw", "Data")
+    traffic_item1_data = {
+        "source_port": "1/7",
+        "dest_port": "2/2",
+        "src_mac_address": "0011.0000.0001",
+        "dst_mac_address": "0012.0000.0001",
+        "framerate_type": "framesPerSecond",
+        "framerate_value": "100",
+        "frame_size": "1400",
+        "bidir": 0,
+        "control_type": "continuous"}
+    assert ixia_instance.add_traffic_item("RawTrafficItem", "raw", traffic_item1_data) == 1
 
 
     yield

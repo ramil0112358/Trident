@@ -84,11 +84,11 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     ixia_ixnetwork = ixia_instance.get_ixnetwork_instance()
     #9.init new scenario with ports(
     ixia_instance.add_scenario()
-    ixia_instance.add_interface_to_scenario("1/7")
+    ixia_instance.add_interface_to_scenario("2/3")
     ixia_instance.add_interface_to_scenario("2/2")
     #10.add topology to scenario
     port_list = list()
-    port_list.append("1/7")
+    port_list.append("2/3")
     assert ixia_instance.add_topology(port_list, "Topology1") == 1
     port_list2 = list()
     port_list2.append("2/2")
@@ -134,6 +134,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("RawTrafficItem", "raw", traffic_item1_data) == 1
     '''
+    '''
     traffic_item2_data = {
         "source_device_group_name": "DeviceGroupA",
         "dest_device_group_name": "DeviceGroupB",
@@ -143,6 +144,19 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "bidir": 0,
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("ethernetTrafficItem", "ethernetVlan", traffic_item2_data) == 1
+    '''
+
+    traffic_item3_data = {
+        "source_device_group_name": "DeviceGroupA",
+        "dest_device_group_name": "DeviceGroupB",
+        "framerate_type": "framesPerSecond",
+        "framerate_value": "100",
+        "frame_size": "1400",
+        "bidir": 0,
+        "control_type": "continuous"}
+    assert ixia_instance.add_traffic_item("ipv4TrafficItem", "ipv4", traffic_item3_data) == 1
+
+
 
 
 

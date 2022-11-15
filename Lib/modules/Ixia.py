@@ -291,12 +291,7 @@ class Ixia():
             traffic_config.TransmissionControl.update(Type=ti_data['control_type'])
             traffic_config.FrameSize.update(FixedSize=ti_data['frame_size'])
             #logging.info('traffic_config after: ' + str(traffic_config.FrameRate))
-            '''
-            source_mac = traffic_config.Stack.find(StackTypeId='ethernet')
-            logging.info('Stack.find(): ' + str(source_mac))
-            field = source_mac.Field.find()
-            logging.info('Field.find(): ' + str(field))
-            '''
+
             # adjust Ethernet source ans destination fields
             # still doesnt work, TrackingEnabled works but src and dst fields doesnt work
             source_mac = traffic_config.Stack.find(
@@ -321,7 +316,6 @@ class Ixia():
 
             return True
 
-        # ethernetVlan
         if ti_type == "ethernetVlan":
             self.traffic_items.append(
                 self.ixia_ixnetwork.Traffic.TrafficItem.add(
@@ -340,7 +334,12 @@ class Ixia():
                         source_device_group = device_group
                     if device_group.Name == ti_data['dest_device_group_name']:
                         dest_device_group = device_group
-            if source_device_group == None or dest_device_group == None:
+
+            if source_device_group == None:
+                logging.debug("source_device_group: " + str(source_device_group) + " not found")
+                return False
+            if dest_device_group == None:
+                logging.debug("dest_device_group: " + str(dest_device_group) + " not found")
                 return False
 
             source_ethernet = source_device_group.Ethernet.find()
@@ -356,30 +355,52 @@ class Ixia():
             traffic_config.TransmissionControl.update(Type=ti_data['control_type'])
             traffic_config.FrameSize.update(FixedSize=ti_data['frame_size'])
 
-            # adjust Ethernet source ans destination fields
-            '''
-            if 'src_mac_address' in TrafficData:
-                source_mac = traffic_config.Stack.find(
-                    StackTypeId='ethernet').Field.find(
-                    FieldTypeId='ethernet.header.sourceAddress')
-                source_mac.update(
-                    ValueType='valueList',
-                    ValueList=TrafficData['src_mac_address'],
-                    TrackingEnabled=True)
-
-            if 'dst_mac_address' in TrafficData:
-                destination_mac = traffic_config.Stack.find(
-                    StackTypeId='ethernet').Field.find(
-                    FieldTypeId='ethernet.header.destinationAddress')
-                destination_mac.update(
-                    ValueType='valueList',
-                    ValueList=TrafficData['dst_mac_address'],
-                    TrackingEnabled=True)
-            '''
             return True
 
-        logging.info("Ports: " + str(self.ixia_ixnetwork.Vport.find()))
+        if ti_type == "ipv4":
+            self.traffic_items.append(
+                self.ixia_ixnetwork.Traffic.TrafficItem.add(
+                    Name=ti_name,
+                    BiDirectional=ti_data['bidir'],
+                    TrafficType=ti_type,
+                    AllowSelfDestined=False,
+                    RouteMesh='oneToOne'))
+
+            source_device_group = None
+            dest_device_group = None
+
+            for device_group_list in self.device_group_dict.values():
+                for device_group in device_group_list:
+                    if device_group.Name == ti_data['source_device_group_name']:
+                        source_device_group = device_group
+                    if device_group.Name == ti_data['dest_device_group_name']:
+                        dest_device_group = device_group
+
+            if source_device_group == None:
+                logging.debug("source_device_group: " + str(source_device_group) + " not found")
+                return False
+            if dest_device_group == None:
+                logging.debug("dest_device_group: " + str(dest_device_group) + " not found")
+                return False
+
+            source_ipv4 = source_device_group.Ethernet.find().Ipv4.find()
+            destination_ipv4 = dest_device_group.Ethernet.find().Ipv4.find()
+
+            self.traffic_items[-1].EndpointSet.add(
+                Sources=source_ipv4,
+                Destinations=destination_ipv4)
+
+            # update the frame rate,frame size,transmission control
+            traffic_config = self.traffic_items[-1].ConfigElement.find()
+            traffic_config.FrameRate.update(Type=ti_data['framerate_type'], Rate=ti_data['framerate_value'])
+            traffic_config.TransmissionControl.update(Type=ti_data['control_type'])
+            traffic_config.FrameSize.update(FixedSize=ti_data['frame_size'])
+
+            return True
         return False
+
+    def start_traffic_item(self, ti_name) -> bool:
+
 
     def start_all_protocols(self) -> bool:
         self.ixia_ixnetwork.StartAllProtocols()

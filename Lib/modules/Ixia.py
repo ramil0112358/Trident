@@ -1,6 +1,6 @@
 from ixnetwork_restpy.testplatform.testplatform import TestPlatform
 from Lib.SystemConstants import ixia_server_ip
-
+import time
 import logging
 '''
 Class represents methods 
@@ -325,6 +325,7 @@ class Ixia():
                     AllowSelfDestined=False,
                     RouteMesh='oneToOne'))
 
+            logging.info("traffic_item: " + str(self.ixia_ixnetwork.Traffic.TrafficItem))
             source_device_group = None
             dest_device_group = None
 
@@ -399,8 +400,36 @@ class Ixia():
             return True
         return False
 
-    def start_traffic_item(self, ti_name) -> bool:
+    def apply_and_start_traffic_items(self) -> bool:
+        for traffic_item in self.traffic_items():
+            traffic_item.Generate()
+        self.ixia_ixnetwork.Traffic.Apply()
+        time.sleep(1)
+        self.ixia_ixnetwork.Traffic.Start()
+        time.sleep(1)
+        return True
 
+    def stop_traffic_items(self) -> bool:
+        self.ixia_ixnetwork.Traffic.Stop()
+        return True
+
+    def enable_traffic_item(self, ti_name) -> bool:
+        traffic_item = None
+        traffic_item = self.ixia_ixnetwork.Traffic.find().TrafficItem.find(Name=ti_name)
+        if traffic_item == None:
+            logging.info("traffic item: " + str(ti_name) + " not found")
+            return False
+        traffic_item.Update(Enabled=True)
+        return True
+
+    def disable_traffic_item(self, ti_name) -> bool:
+        traffic_item = None
+        traffic_item = self.ixia_ixnetwork.Traffic.find().TrafficItem.find(Name=ti_name)
+        if traffic_item == None:
+            logging.info("traffic item: " + str(ti_name) + " not found")
+            return False
+        traffic_item.Update(Enabled=False)
+        return True
 
     def start_all_protocols(self) -> bool:
         self.ixia_ixnetwork.StartAllProtocols()

@@ -1,6 +1,7 @@
 import logging
 import pytest
 from Lib.modules.Ixia import Ixia
+import time
 '''
 L2 bridging test.
 -Broadcast traffic forwarding check
@@ -134,7 +135,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("RawTrafficItem", "raw", traffic_item1_data) == 1
     '''
-    '''
+
     traffic_item2_data = {
         "source_device_group_name": "DeviceGroupA",
         "dest_device_group_name": "DeviceGroupB",
@@ -144,7 +145,6 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "bidir": 0,
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("ethernetTrafficItem", "ethernetVlan", traffic_item2_data) == 1
-    '''
 
     traffic_item3_data = {
         "source_device_group_name": "DeviceGroupA",
@@ -156,11 +156,13 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("ipv4TrafficItem", "ipv4", traffic_item3_data) == 1
 
-
-
-
-
-
+    assert ixia_instance.start_traffic_item("ethernetTrafficItem") == 1
+    time.sleep(15)
+    assert ixia_instance.start_traffic_item("ipv4TrafficItem") == 1
+    time.sleep(15)
+    ixia_instance.stop_traffic_item("ethernetTrafficItem")
+    time.sleep(15)
+    ixia_instance.stop_traffic_item("ipv4TrafficItem")
 
     yield
     #Teardown

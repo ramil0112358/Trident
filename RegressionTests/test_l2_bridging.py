@@ -122,9 +122,9 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
                                            True) == 1
 
     ixia_instance.start_all_protocols()
-    '''
+
     traffic_item1_data = {
-        "source_port": "1/7",
+        "source_port": "2/3",
         "dest_port": "2/2",
         "src_mac_address": "00:11:00:00:00:01",
         "dst_mac_address": "00:12:00:00:00:01",
@@ -134,7 +134,6 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "bidir": 0,
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("RawTrafficItem", "raw", traffic_item1_data) == 1
-    '''
 
     traffic_item2_data = {
         "source_device_group_name": "DeviceGroupA",
@@ -156,13 +155,25 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("ipv4TrafficItem", "ipv4", traffic_item3_data) == 1
 
-    assert ixia_instance.start_traffic_item("ethernetTrafficItem") == 1
-    time.sleep(15)
-    assert ixia_instance.start_traffic_item("ipv4TrafficItem") == 1
-    time.sleep(15)
-    ixia_instance.stop_traffic_item("ethernetTrafficItem")
-    time.sleep(15)
-    ixia_instance.stop_traffic_item("ipv4TrafficItem")
+    assert ixia_instance.disable_traffic_item("RawTrafficItem") == 1
+    assert ixia_instance.disable_traffic_item("ethernetTrafficItem") == 1
+    assert ixia_instance.disable_traffic_item("ipv4TrafficItem") == 1
+
+    assert ixia_instance.enable_traffic_item("RawTrafficItem") == 1
+    assert ixia_instance.apply_and_start_traffic_items() == 1
+    time.sleep(30)
+    assert ixia_instance.stop_traffic_items() == 1
+    assert ixia_instance.disable_traffic_item("RawTrafficItem") == 1
+    assert ixia_instance.enable_traffic_item("ethernetTrafficItem") == 1
+    assert ixia_instance.apply_and_start_traffic_items() == 1
+    time.sleep(30)
+    assert ixia_instance.stop_traffic_items() == 1
+    assert ixia_instance.disable_traffic_item("ethernetTrafficItem") == 1
+    assert ixia_instance.enable_traffic_item("ipv4TrafficItem") == 1
+    assert ixia_instance.apply_and_start_traffic_items() == 1
+    time.sleep(30)
+    assert ixia_instance.stop_traffic_items() == 1
+
 
     yield
     #Teardown

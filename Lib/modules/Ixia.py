@@ -325,7 +325,7 @@ class Ixia():
                     AllowSelfDestined=False,
                     RouteMesh='oneToOne'))
 
-            logging.info("traffic_item: " + str(self.ixia_ixnetwork.Traffic.TrafficItem))
+            #logging.info("traffic_item: " + str(self.ixia_ixnetwork.Traffic.TrafficItem))
             source_device_group = None
             dest_device_group = None
 
@@ -401,7 +401,7 @@ class Ixia():
         return False
 
     def apply_and_start_traffic_items(self) -> bool:
-        for traffic_item in self.traffic_items():
+        for traffic_item in self.traffic_items:
             traffic_item.Generate()
         self.ixia_ixnetwork.Traffic.Apply()
         time.sleep(1)
@@ -419,7 +419,7 @@ class Ixia():
         if traffic_item == None:
             logging.info("traffic item: " + str(ti_name) + " not found")
             return False
-        traffic_item.Update(Enabled=True)
+        traffic_item.update(Enabled=True)
         return True
 
     def disable_traffic_item(self, ti_name) -> bool:
@@ -428,7 +428,7 @@ class Ixia():
         if traffic_item == None:
             logging.info("traffic item: " + str(ti_name) + " not found")
             return False
-        traffic_item.Update(Enabled=False)
+        traffic_item.update(Enabled=False)
         return True
 
     def start_all_protocols(self) -> bool:

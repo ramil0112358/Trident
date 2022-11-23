@@ -1,5 +1,6 @@
 from ixnetwork_restpy.testplatform.testplatform import TestPlatform
 from Lib.SystemConstants import ixia_server_ip
+from ixnetwork_restpy.assistants.statistics.statviewassistant import StatViewAssistant
 import time
 import logging
 '''
@@ -402,6 +403,8 @@ class Ixia():
 
     def apply_and_start_traffic_items(self) -> bool:
         for traffic_item in self.traffic_items:
+            traffic_item.EndpointSet.find().refresh()
+            traffic_item.Tracking.find().TrackBy = ['trackingenabled0']
             traffic_item.Generate()
         self.ixia_ixnetwork.Traffic.Apply()
         time.sleep(1)
@@ -431,8 +434,28 @@ class Ixia():
         traffic_item.update(Enabled=False)
         return True
 
+    def get_traffic_items_stat(self) -> bool:
+        flow_statistics = StatViewAssistant(self.ixia_ixnetwork, 'Flow Statistics')
+        flow_statistics = vars(flow_statistics.Rows)
+        final_statistics = dict()
+        traffic_item_statistics = dict()
+        traffic_item_name = str
+        for row_data in flow_statistics['_row_data']:
+            column_index = 0
+            for column_data in flow_statistics['_column_headers']:
+                traffic_item_statistics.update({column_data: row_data[column_index]})
+                if column_index == 2:
+                    traffic_item_name = row_data[column_index]
+                column_index = column_index + 1
+            traffic_item_statistics_copy = dict(traffic_item_statistics)
+            final_statistics[traffic_item_name] = traffic_item_statistics_copy
+            traffic_item_statistics.clear()
+        return final_statistics
+
     def start_all_protocols(self) -> bool:
         self.ixia_ixnetwork.StartAllProtocols()
+
+
 
 
 

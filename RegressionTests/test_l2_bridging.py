@@ -85,17 +85,17 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     ixia_ixnetwork = ixia_instance.get_ixnetwork_instance()
     #9.init new scenario with ports(
     ixia_instance.add_scenario()
-    ixia_instance.add_interface_to_scenario("2/3")
+    ixia_instance.add_interface_to_scenario("2/5")
     ixia_instance.add_interface_to_scenario("2/2")
     #10.add topology to scenario
     port_list = list()
-    port_list.append("2/3")
+    port_list.append("2/5")
     assert ixia_instance.add_topology(port_list, "Topology1") == 1
     port_list2 = list()
     port_list2.append("2/2")
     assert ixia_instance.add_topology(port_list2, "Topology2") == 1
     assert ixia_instance.add_device_group("Topology1", "DeviceGroupA", 1) == 1
-    assert ixia_instance.add_device_group("Topology2", "DeviceGroupB", 5) == 1
+    assert ixia_instance.add_device_group("Topology2", "DeviceGroupB", 1) == 1
     #11.add protocols
     '''
     vlan_list = "500"
@@ -122,9 +122,9 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
                                            True) == 1
 
     ixia_instance.start_all_protocols()
-
+    '''
     traffic_item1_data = {
-        "source_port": "2/3",
+        "source_port": "2/5",
         "dest_port": "2/2",
         "src_mac_address": "00:11:00:00:00:01",
         "dst_mac_address": "00:12:00:00:00:01",
@@ -173,6 +173,23 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     assert ixia_instance.apply_and_start_traffic_items() == 1
     time.sleep(30)
     assert ixia_instance.stop_traffic_items() == 1
+    '''
+
+    traffic_item3_data = {
+        "source_device_group_name": "DeviceGroupA",
+        "dest_device_group_name": "DeviceGroupB",
+        "framerate_type": "framesPerSecond",
+        "framerate_value": "100",
+        "frame_size": "1400",
+        "bidir": 0,
+        "control_type": "continuous"}
+    assert ixia_instance.add_traffic_item("ipv4TrafficItem", "ipv4", traffic_item3_data) == 1
+    assert ixia_instance.apply_and_start_traffic_items() == 1
+    time.sleep(30)
+    assert ixia_instance.stop_traffic_items() == 1
+
+    flow_statistics = ixia_instance.get_traffic_items_stat()
+    logging.info("Traffic_items stats: " + str(flow_statistics))
 
 
     yield

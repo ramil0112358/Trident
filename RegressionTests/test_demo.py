@@ -2,22 +2,8 @@ import logging
 import pytest
 from Lib.modules.Ixia import Ixia
 import time
-'''
-L2 bridging test.
--Broadcast traffic forwarding check
--Multicast traffic forwarding check
--UUC traffic forwarding check
--KUC traffic forwarding check
--Static MAC entry check
--MAC table functionality check
--Traffic loss due mac address flap check
--Access ports functionality check
--Vlan traffic forwarding failure check
--MAC learning check
--Incorrect source MAC check
--Incorrect FCS check
-'''
-#------------------------init functions--------------------------
+
+# ------------------------init functions--------------------------
 @pytest.fixture
 def init_test_environment(init_environment_instances):
     topology_list, \
@@ -27,10 +13,11 @@ def init_test_environment(init_environment_instances):
            topology_manager_instance, \
            module_manager_instance
 
+
 @pytest.fixture
 def test_l2_bridging_broadcast_fixture(init_test_environment):
     topology_list, topology_manager_instance, module_manager_instance = init_test_environment
-    #Setup
+    # Setup
     logging.info('Broadcast test setup')
     '''
     #1.Create topology
@@ -69,7 +56,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     #command2_args = {'session_id': 'ses1',
     #                 'command': 'vlan 778 bridge 1'}
     #module_manager_instance.module_send_send_via_sesid(command2_args)
-    
+
     #6.Send command via hostname
     command1a_args = {'hostname': 'node1',
                      'command': 'conf t'}
@@ -83,10 +70,12 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     #8.Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")
     ixia_ixnetwork = ixia_instance.get_ixnetwork_instance()
+
     #9.init new scenario with ports(
     ixia_instance.add_scenario()
     ixia_instance.add_interface_to_scenario("2/5")
     ixia_instance.add_interface_to_scenario("2/2")
+
     #10.add topology to scenario
     port_list = list()
     port_list.append("2/5")
@@ -96,17 +85,25 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     assert ixia_instance.add_topology(port_list2, "Topology2") == 1
     assert ixia_instance.add_device_group("Topology1", "DeviceGroupA", 1) == 1
     assert ixia_instance.add_device_group("Topology2", "DeviceGroupB", 1) == 1
+
     #11.add protocols
+    #11.a ethernet with vlan tags
     '''
     vlan_list = "500"
     assert ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA", True, 1, vlan_list) == 1
-    vlan_start_value = "501"
-    assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB", True, 5, vlan_start_value) == 1
+    vlan_start_value = "501" #will be added 5 times according to multiplier 
+    device_group_multiplier = 5
+    assert ixia_instance.add_protocol_ethernet("Topology2", 
+                                               "DeviceGroupB", 
+                                                True, 
+                                                device_group_multiplier, 
+                                                vlan_start_value) == 1
     '''
+    #11.b ethernet without vlan tags
     assert ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA") == 1
     assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB") == 1
 
-
+    #12 add ipv4 protocols
     assert ixia_instance.add_protocol_ipv4("Topology1",
                                            "DeviceGroupA",
                                            "192.168.1.1",
@@ -121,7 +118,10 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
                                            "192.168.1.1",
                                            True) == 1
 
+    #13 start scenarion protocols
     ixia_instance.start_all_protocols()
+
+
     '''
     traffic_item1_data = {
         "source_port": "2/5",
@@ -175,6 +175,10 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     assert ixia_instance.stop_traffic_items() == 1
     '''
 
+
+
+
+    #14 create traffic item
     traffic_item3_data = {
         "source_device_group_name": "DeviceGroupA",
         "dest_device_group_name": "DeviceGroupB",
@@ -184,12 +188,16 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
         "bidir": 0,
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("ipv4TrafficItem", "ipv4", traffic_item3_data) == 1
+
+    #15 launch and stop traffic item
     assert ixia_instance.apply_and_start_traffic_items() == 1
     time.sleep(30)
     assert ixia_instance.stop_traffic_items() == 1
 
+    #16 check traffic item statistic, packet loss and other
     flow_statistics = ixia_instance.get_traffic_items_stat()
-    logging.info("Traffic_items stats: " + str(flow_statistics))
+    packet_loss = flow_statistics["ipv4TrafficItem"]["Loss %"]
+    logging.info("Traffic_items packet_loss: " + str(packet_loss))
     """
     Main traffic_items features:
     'Tx Frames': '2199',
@@ -205,13 +213,12 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     'Last TimeStamp': '00:00:22.178'
     """
 
-
     yield
-    #Teardown
+    # Teardown
     logging.info('Broadcast test teardown')
 
 
-#------------------------test functions--------------------------
+# ------------------------test functions--------------------------
 
 def test_l2_bridging_broadcast_core(test_l2_bridging_broadcast_fixture):
     module_manager_instance = test_l2_bridging_broadcast_fixture

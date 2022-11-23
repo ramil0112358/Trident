@@ -163,7 +163,7 @@ class TopologyManager(object):
 
     #remove node from topology
     def remove_topology_node(self, args):
-        # prepare args
+        #prepare args
         id = args['id']
         topology_name = args['topology']
         # search demanded topology
@@ -180,6 +180,9 @@ class TopologyManager(object):
         if topology_check == False:
             logging.info('topology not found')
             return 0, None
+
+    def update_topology_node_config(self, new_config):
+        pass
 
     #add link to topology
     def add_topology_link(self, args):

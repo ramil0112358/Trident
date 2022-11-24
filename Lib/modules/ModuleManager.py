@@ -179,6 +179,14 @@ class ModuleManager():
                 logging.info('Hostname: ' + str(hostname) + ' not found')
         return 0, None
 
+    # wait test via first found session id for demanded hostname
+    def module_send_wait_text_via_hostname(self, args):
+        hostname = args['hostname']
+        text = args['text']
+
+        session_info = {'hostname': hostname, 'session_instance': session_instance}
+        self.connect_login_sessions_dict[sesid] = session_info
+
     def add_module_ixia(self, args):
         pass
 

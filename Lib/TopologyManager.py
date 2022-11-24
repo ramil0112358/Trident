@@ -181,6 +181,50 @@ class TopologyManager(object):
             logging.info('topology not found')
             return 0, None
 
+    def init_topology_node(self,
+                           node_name,
+                           module_manager_instance,
+                           mgmt_info=None,
+                           software_image_path=None,
+                           new_config_path=None) -> bool:
+        """
+        1.Clear node's old configuration
+        2.Set new management ip and default route
+        3.Upgrade node's software
+        4.Set new configuration
+        """
+
+        #Clear old configuration.Changes takes effect after reboot.
+        command_to_send_args = {'hostname': node_name,
+                                'command': 'copy empty-config startup-config'}
+        module_manager_instance.module_send_send_via_hostname(command_to_send_args)
+        command_to_send_args = {'hostname': node_name,
+                                'command': 'reboot'}
+        module_manager_instance.module_send_send_via_hostname(command_to_send_args)
+        command_to_send_args = {'hostname': node_name,
+                                'command': 'y'}
+        module_manager_instance.module_send_send_via_hostname(command_to_send_args)
+        text_to_wait_args = {'hostname': node_name,
+                             'text': 'login:'}
+
+        '''
+        if mgmt info != None:
+            #mgmt = [mgmt_ip, mgmt_mask, mgmt_gateway]
+            mgmt_ip = mgmt_info[0]
+            mgmt_mask = mgmt_info[1]
+            mgmt_gateway = mgmt_info[2]
+        '''
+        return True
+
+
+
+
+
+    def update_topology_node_software(self, node_name, software_image_path):
+        """
+        Update node software can be after management interface configuration only
+        """
+
     def update_topology_node_config(self, new_config):
         pass
 

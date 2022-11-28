@@ -64,6 +64,11 @@ class Connect():
 
     def login(self):
         #pdb.set_trace()
+        result = {"login_result": False,
+                  "session_instance": None,
+                  "ip": None,
+                  "protocol": None,
+                  "port": None}
         #get node type specific attributes from json library
         device_attr_json = devices_attr_conf_file_path + str(self.node.get_type()) + '.json'
         with open(device_attr_json, "r") as read_file:
@@ -85,7 +90,7 @@ class Connect():
                     # check session process existence
                     if psutil.pid_exists(self.session.pid) == False:
                         logging.info('Device {host} connection refused.'.format(host=str(self.ip)))
-                        return False
+                        return result
                     # connection to device console port via telnet through console server
                     # may not show "login:" invitation instantly.only after endline reception
                     # so "endline" will be send
@@ -102,7 +107,12 @@ class Connect():
                             self.session.sendline('q')
                         logging.info(f'Already connected to console server '
                                      f'{str(self.ip)} via telnet port {str(self.port)}')
-                        return self.session
+                        result = {"login_result": True,
+                                  "session_instance": self.session,
+                                  "ip": self.ip,
+                                  "protocol": "contel",
+                                  "port": self.port}
+                        return result
                     logging.debug('# More & login pass.login: line found')
                 # common telnet connection
                 logging.debug('Applying credentials')
@@ -123,16 +133,21 @@ class Connect():
                 # self.child.logfile = None
                 # fout.close()
                 logging.debug(f'Successfully connected to {str(self.ip)} via telnet port {str(self.port)}')
-                return self.session
+                result = {"login_result": True,
+                          "session_instance": self.session,
+                          "ip": self.ip,
+                          "protocol": "telnet",
+                          "port": self.port}
+                return result
 
             except pexpect.TIMEOUT:
                 logging.info('Connection to the device {} timed out'.format(str(self.ip)))
                 logging.debug(self.session.before)
-                return False
+                return result
             except pexpect.EOF:
                 logging.info(('Connection to the device {} received unexpected output').format(str(self.ip)))
                 logging.debug(self.session.before)
-                return False
+                return result
 
         elif self.protocol == 'ssh':
             try:
@@ -144,18 +159,23 @@ class Connect():
                 self.session.sendline(self.password)
                 self.session.sendline('enable')
                 logging.debug(f'Successfully connected to {str(self.ip)} via ssh port {str(self.port)}')
-                return self.session
+                esult = {"login_result": True,
+                         "session_instance": self.session,
+                         "ip": self.ip,
+                         "protocol": "ssh",
+                         "port": self.port}
+                return result
             except pexpect.TIMEOUT:
                 logging.info(
                     'Connection to the device {} timed out'.format(str(self.ip)))
                 logging.debug(self.session.before.decode('utf-8').strip())
-                return False
+                return result
             except pexpect.EOF:
                 logging.info((
                     'Connection to the device {} received unexpected output')
                     .format(str(self.ip)))
                 logging.debug(self.session.before.decode('utf-8').strip())
-                return False
+                return result
 
     def logout(self, session):
         if session.isalive():

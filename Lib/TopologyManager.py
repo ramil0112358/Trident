@@ -207,6 +207,7 @@ class TopologyManager(object):
         text_to_wait_args = {'hostname': node_name,
                              'text': 'login:'}
 
+
         '''
         if mgmt info != None:
             #mgmt = [mgmt_ip, mgmt_mask, mgmt_gateway]

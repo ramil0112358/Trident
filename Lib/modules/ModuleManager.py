@@ -86,19 +86,23 @@ class ModuleManager():
             if module_type == 'connect':
                 if connect_id == module_instance.get_id():
                     logging.info('login with: ' + str(connect_id) + ' connect module')
-                    session_instance = module_instance.login()
+                    login_result = module_instance.login()
+                    session_instance = login_result["session_instance"]
                     if session_instance != False:
                         # "send" class init to send messages if it first login
                         if len(self.connect_login_sessions_dict) == 0:
                             first_connection_flag = True
-                        # generate session id
-                        self.connect_sessions_id_counter += 1
-                        sesid = 'ses' + str(self.connect_sessions_id_counter)
                         # get hostname of node
                         hostname = module_instance.get_nodename()
+                        # generate session id
+                        self.connect_sessions_id_counter += 1
+                        sesid = 'ses' + str(self.connect_sessions_id_counter) + ":" + \
+                                hostname + ":" + \
+                                login_result["protocol"] + ":" + \
+                                login_result["ip"] + ":" + \
+                                login_result["port"]
                         # set data to session_dict
-                        session_info = {'hostname': hostname, 'session_instance': session_instance }
-                        self.connect_login_sessions_dict[sesid] = session_info
+                        self.connect_login_sessions_dict[sesid] = session_instance
                         logging.info('connection established, sessionID: ' + str(sesid))
                         logging.debug(self.connect_login_sessions_dict)
                         result = 1
@@ -122,9 +126,9 @@ class ModuleManager():
             if module_type == 'connect':
                 if connect_id == module_instance.get_id():
                     # search session
-                    for session_id, session_info in self.connect_login_sessions_dict.items():
+                    for session_id, session_instance in self.connect_login_sessions_dict.items():
                         if session_id == logout_session_id:
-                            result = module_instance.logout(session_info['session_instance'])
+                            result = module_instance.logout(session_instance)
                             if result == True:
                                 logging.info('SessionID: ' + logout_session_id +
                                                         ' successfully disconnected')
@@ -142,7 +146,7 @@ class ModuleManager():
         command = command.replace('_',' ')
         # check demanded session existance
         if sesID in self.connect_login_sessions_dict:
-            target_session = self.connect_login_sessions_dict[sesID]['session_instance']
+            target_session = self.connect_login_sessions_dict[sesID]
             #print(self.module_instance_dict)
             # check send instance existance
             if 'send' in self.module_instance_dict:
@@ -157,7 +161,7 @@ class ModuleManager():
         else:
             logging.info('SessionID: ' + str(sesID) + ' not found')
             return 0, None
-
+    '''
     #send command via first found session id for demanded hostname
     def module_send_send_via_hostname(self, args):
         hostname = args['hostname']
@@ -178,15 +182,15 @@ class ModuleManager():
             else:
                 logging.info('Hostname: ' + str(hostname) + ' not found')
         return 0, None
-
+    '''
     # wait test via first found session id for demanded hostname
-    def module_send_wait_text_via_hostname(self, args):
+    def module_send_wait_text_via_sesid(self, args):
         hostname = args['hostname']
         text = args['text']
-
+        '''
         session_info = {'hostname': hostname, 'session_instance': session_instance}
         self.connect_login_sessions_dict[sesid] = session_info
-
+        '''
     def add_module_ixia(self, args):
         pass
 

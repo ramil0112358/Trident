@@ -19,7 +19,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     topology_list, topology_manager_instance, module_manager_instance = init_test_environment
     # Setup
     logging.info('Broadcast test setup')
-    '''
+
     #1.Create topology
     top_args = {'topology_name': 'topology1'}
     topology_manager_instance.add_topology(top_args)
@@ -31,7 +31,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     topology_manager_instance.add_topology_node(node_args)
     connect_args = {'topology': 'topology1',
                     'hostname': 'node1',
-                    'ip': '10.27.192.41',
+                    'ip': '10.27.192.38',
                     'protocol': 'telnet',
                     'port': '23',
                     'username': 'admin',
@@ -53,24 +53,29 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     sesdict = module_manager_instance.connect_login_sessions_dict.items()
     logging.debug('session_dict: ' + str(sesdict))
     logging.debug('module_instance_dict: ' + str(module_manager_instance.module_instance_dict))
-    
-    #6.Send command via session id  
-    #command1_args = {'session_id': 'ses1',
-    #                 'command': 'conf t'}
-    #module_manager_instance.module_send_send_via_sesid(command1_args)
-    #command2_args = {'session_id': 'ses1',
-    #                 'command': 'vlan 778 bridge 1'}
-    #module_manager_instance.module_send_send_via_sesid(command2_args)
+
+    #6.Send command via session id
+    command1_args = {'session_id': 'ses1:node1:telnet:10.27.192.38:23',
+                     'command': 'conf t'}
+    module_manager_instance.module_send_send_via_sesid(command1_args)
+    command2_args = {'session_id': 'ses1:node1:telnet:10.27.192.38:23',
+                     'command': 'vlan 778 bridge 1'}
+    module_manager_instance.module_send_send_via_sesid(command2_args)
+
     #6.Send command via hostname
+    '''
     command1a_args = {'hostname': 'node1',
                      'command': 'conf t'}
     module_manager_instance.module_send_send_via_hostname(command1a_args)
-    
-    #7.Send command via hostname
     command2a_args = {'hostname': 'node1',
                       'command': 'vlan 779 bridge 1'}
     module_manager_instance.module_send_send_via_hostname(command2a_args)
     '''
+
+    #7 Logout
+    logout_args = {'connect_id': connect_id.get_id(), 'session_id': 'ses1:node1:telnet:10.27.192.38:23'}
+    logout_res, nope = module_manager_instance.module_connect_logout(logout_args)
+    logging.info('logout_res: ' + str(logout_res))
 
     #8.Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")

@@ -20,6 +20,8 @@ class Send():
     def send_command(self, sesID, command):
         try:
             sesID.sendline(command)
+            logging.info("sesID before buffer: " + sesID.before.decode('utf-8').strip())
+            '''
             result = sesID.expect(['>', '#'])
             while True:
                 if result == 0 or result == 1:
@@ -27,9 +29,12 @@ class Send():
                     break
                 else:
                     logging.debug(str(result) + ' ' + sesID.before.decode('utf-8').strip())
+                    
+            logging.info("sesID before buffer: " + sesID.before.decode('utf-8').strip())
+            '''
 
-            logging.info(sesID.before.decode('utf-8').strip())
             # if terminal lenght != 0 and --More-- messages will be shown
+
             '''
             while True:
                 send_result = sesID.expect(['--More--'])
@@ -38,9 +43,9 @@ class Send():
                     sesID.sendline(' ')
                     #logging.info(sesID.before.decode('utf-8').strip())
                 else:
-                    logging.info(sesID.before.decode('utf-8').strip())
+                    logging.info('sessionID before: ' + sesID.before.decode('utf-8').strip())
                     break
-                logging.info(sesID.before.decode('utf-8').strip())
+                logging.info('sessionID before again: ' + sesID.before.decode('utf-8').strip())
             '''
 
             return True

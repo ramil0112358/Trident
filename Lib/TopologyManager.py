@@ -3,6 +3,7 @@ from Lib.Link import Link
 from Lib.SystemConstants import MAX_TOPS, devices_attr_conf_file_path, logging_type
 import os.path
 import logging
+import time
 
 class TopologyManager(object):
     '''
@@ -193,20 +194,37 @@ class TopologyManager(object):
         3.Upgrade node's software
         4.Set new configuration
         """
+        """
+        First connection to node gonna be via console server.
+        It creates first session with first session id in connect_login_sessions_dict dictionary.
+        Thus send command to node in this method will be through module_send_send_via_hostname() 
+        because this method uses first found session id for demanded hostname.
+        Other commands in further poart of test recommended to send via module_send_send_via_sesid() because
+        one hostname can have several sessions and session id's
+        """
 
         #Clear old configuration.Changes takes effect after reboot.
         command_to_send_args = {'hostname': node_name,
                                 'command': 'copy empty-config startup-config'}
         module_manager_instance.module_send_send_via_hostname(command_to_send_args)
+        time.sleep(10)
         command_to_send_args = {'hostname': node_name,
-                                'command': 'reboot'}
+                                'command': 'reload'}
         module_manager_instance.module_send_send_via_hostname(command_to_send_args)
+        time.sleep(10)
+        text_to_wait_args1 = {'sessionID': 'ses1:node1:telnet:10.27.193.2:2037',
+                              'text': 'reboot system? (y/n)'}
+        module_manager_instance.module_send_wait_text_via_sesid(text_to_wait_args1)
         command_to_send_args = {'hostname': node_name,
                                 'command': 'y'}
         module_manager_instance.module_send_send_via_hostname(command_to_send_args)
-        text_to_wait_args = {'hostname': node_name,
-                             'text': 'login:'}
 
+        '''
+        text_to_wait_args = {'sessionID': node_name,
+                             'text': 'login:'}
+        module_manager_instance.module_send_wait_text_via_sesid(text_to_wait_args)
+        logging.info("login: found")
+        '''
 
         '''
         if mgmt info != None:

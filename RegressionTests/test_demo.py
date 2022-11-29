@@ -31,9 +31,9 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     topology_manager_instance.add_topology_node(node_args)
     connect_args = {'topology': 'topology1',
                     'hostname': 'node1',
-                    'ip': '10.27.192.38',
-                    'protocol': 'telnet',
-                    'port': '23',
+                    'ip': '10.27.193.2',
+                    'protocol': 'contel',
+                    'port': '2037',
                     'username': 'admin',
                     'password': 'bulat'}
                     
@@ -45,10 +45,13 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     
     #4.Login to node
     logging.info(connect_id.get_summary())
-    login_res, nope = module_manager_instance.module_connect_login(login_args)
+    login_res = module_manager_instance.module_connect_login(login_args)
     logging.debug('login_res: ' + str(login_res))
     assert login_res == 1
-    
+
+    #4a.Init node
+    topology_manager_instance.init_topology_node('node1', module_manager_instance)
+
     #5.Get session id
     sesdict = module_manager_instance.connect_login_sessions_dict.items()
     logging.debug('session_dict: ' + str(sesdict))
@@ -62,21 +65,12 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
                      'command': 'vlan 778 bridge 1'}
     module_manager_instance.module_send_send_via_sesid(command2_args)
 
-    #6.Send command via hostname
-    '''
-    command1a_args = {'hostname': 'node1',
-                     'command': 'conf t'}
-    module_manager_instance.module_send_send_via_hostname(command1a_args)
-    command2a_args = {'hostname': 'node1',
-                      'command': 'vlan 779 bridge 1'}
-    module_manager_instance.module_send_send_via_hostname(command2a_args)
-    '''
-
     #7 Logout
     logout_args = {'connect_id': connect_id.get_id(), 'session_id': 'ses1:node1:telnet:10.27.192.38:23'}
     logout_res, nope = module_manager_instance.module_connect_logout(logout_args)
     logging.info('logout_res: ' + str(logout_res))
 
+    '''
     #8.Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")
     ixia_ixnetwork = ixia_instance.get_ixnetwork_instance()
@@ -96,19 +90,6 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     assert ixia_instance.add_device_group("Topology1", "DeviceGroupA", 1) == 1
     assert ixia_instance.add_device_group("Topology2", "DeviceGroupB", 1) == 1
 
-    #11.add protocols
-    #11.a ethernet with vlan tags
-    '''
-    vlan_list = "500"
-    assert ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA", True, 1, vlan_list) == 1
-    vlan_start_value = "501" #will be added 5 times according to multiplier 
-    device_group_multiplier = 5
-    assert ixia_instance.add_protocol_ethernet("Topology2", 
-                                               "DeviceGroupB", 
-                                                True, 
-                                                device_group_multiplier, 
-                                                vlan_start_value) == 1
-    '''
     #11.b ethernet without vlan tags
     assert ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA") == 1
     assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB") == 1
@@ -131,63 +112,6 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     #13 start scenarion protocols
     ixia_instance.start_all_protocols()
 
-
-    '''
-    traffic_item1_data = {
-        "source_port": "2/5",
-        "dest_port": "2/2",
-        "src_mac_address": "00:11:00:00:00:01",
-        "dst_mac_address": "00:12:00:00:00:01",
-        "framerate_type": "framesPerSecond",
-        "framerate_value": "100",
-        "frame_size": "1400",
-        "bidir": 0,
-        "control_type": "continuous"}
-    assert ixia_instance.add_traffic_item("RawTrafficItem", "raw", traffic_item1_data) == 1
-
-    traffic_item2_data = {
-        "source_device_group_name": "DeviceGroupA",
-        "dest_device_group_name": "DeviceGroupB",
-        "framerate_type": "framesPerSecond",
-        "framerate_value": "100",
-        "frame_size": "1400",
-        "bidir": 0,
-        "control_type": "continuous"}
-    assert ixia_instance.add_traffic_item("ethernetTrafficItem", "ethernetVlan", traffic_item2_data) == 1
-
-    traffic_item3_data = {
-        "source_device_group_name": "DeviceGroupA",
-        "dest_device_group_name": "DeviceGroupB",
-        "framerate_type": "framesPerSecond",
-        "framerate_value": "100",
-        "frame_size": "1400",
-        "bidir": 0,
-        "control_type": "continuous"}
-    assert ixia_instance.add_traffic_item("ipv4TrafficItem", "ipv4", traffic_item3_data) == 1
-
-    assert ixia_instance.disable_traffic_item("RawTrafficItem") == 1
-    assert ixia_instance.disable_traffic_item("ethernetTrafficItem") == 1
-    assert ixia_instance.disable_traffic_item("ipv4TrafficItem") == 1
-
-    assert ixia_instance.enable_traffic_item("RawTrafficItem") == 1
-    assert ixia_instance.apply_and_start_traffic_items() == 1
-    time.sleep(30)
-    assert ixia_instance.stop_traffic_items() == 1
-    assert ixia_instance.disable_traffic_item("RawTrafficItem") == 1
-    assert ixia_instance.enable_traffic_item("ethernetTrafficItem") == 1
-    assert ixia_instance.apply_and_start_traffic_items() == 1
-    time.sleep(30)
-    assert ixia_instance.stop_traffic_items() == 1
-    assert ixia_instance.disable_traffic_item("ethernetTrafficItem") == 1
-    assert ixia_instance.enable_traffic_item("ipv4TrafficItem") == 1
-    assert ixia_instance.apply_and_start_traffic_items() == 1
-    time.sleep(30)
-    assert ixia_instance.stop_traffic_items() == 1
-    '''
-
-
-
-
     #14 create traffic item
     traffic_item3_data = {
         "source_device_group_name": "DeviceGroupA",
@@ -208,6 +132,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     flow_statistics = ixia_instance.get_traffic_items_stat()
     packet_loss = flow_statistics["ipv4TrafficItem"]["Loss %"]
     logging.info("Traffic_items packet_loss: " + str(packet_loss))
+    '''
     """
     Main traffic_items features:
     'Tx Frames': '2199',

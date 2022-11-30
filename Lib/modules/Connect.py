@@ -76,7 +76,7 @@ class Connect():
         for item in node_attributes.keys():
             setattr(self, item, node_attributes[item])
 
-        if self.protocol == 'telnet' or self.protocol == 'contel':
+        if self.protocol == 'telnet' or self.protocol == 'console':
             try:
                 credentials = 'telnet ' + str(self.ip) + ' ' + str(self.port)
                 self.session = pexpect.spawn(credentials, timeout=60)
@@ -84,8 +84,8 @@ class Connect():
                 time.sleep(5)
                 logging.debug('5 sec pass')
                 # telnet connection over console server
-                if self.protocol == 'contel':
-                    logging.debug('contel pass')
+                if self.protocol == 'console':
+                    logging.debug('console pass')
                     # if remote device refuses connection session process terminates immediately
                     # check session process existence
                     if psutil.pid_exists(self.session.pid) == False:
@@ -110,10 +110,24 @@ class Connect():
                         result = {"login_result": True,
                                   "session_instance": self.session,
                                   "ip": self.ip,
-                                  "protocol": "contel",
+                                  "protocol": "console",
                                   "port": self.port}
                         return result
-                    logging.debug('# More & login pass.login: line found')
+                    else:
+                        self.session.sendline(self.username)
+                        self.session.expect('Password:')
+                        self.session.sendline(self.password)
+                        self.session.expect(self.terminal_basic_prompt)
+                        self.session.sendline(self.terminal_exec_command)
+                        self.session.expect(self.terminal_exec_prompt)
+                        logging.info(f'Successfully connected to console server '
+                                     f'{str(self.ip)} via telnet port {str(self.port)}')
+                        result = {"login_result": True,
+                                  "session_instance": self.session,
+                                  "ip": self.ip,
+                                  "protocol": "console",
+                                  "port": self.port}
+                        return result
                 # common telnet connection
                 logging.debug('Applying credentials')
                 if self.protocol == 'telnet':
@@ -124,15 +138,15 @@ class Connect():
                 logging.debug('password pass')
                 self.session.sendline(self.password)
                 self.session.expect(self.terminal_basic_prompt)
-                logging.debug(self.terminal_basic_prompt + ' pass')
+                #logging.debug(self.terminal_basic_prompt + ' pass')
                 self.session.sendline(self.terminal_exec_command)
-                logging.debug(self.terminal_exec_command + ' sent')
+                #logging.debug(self.terminal_exec_command + ' sent')
                 self.session.expect(self.terminal_exec_prompt)
-                logging.debug(self.terminal_exec_prompt + ' pass')
+                #logging.debug(self.terminal_exec_prompt + ' pass')
                 # closing log to file
                 # self.child.logfile = None
                 # fout.close()
-                logging.debug(f'Successfully connected to {str(self.ip)} via telnet port {str(self.port)}')
+                logging.info(f'Successfully connected to {str(self.ip)} via telnet port {str(self.port)}')
                 result = {"login_result": True,
                           "session_instance": self.session,
                           "ip": self.ip,

@@ -32,7 +32,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     connect_args = {'topology': 'topology1',
                     'hostname': 'node1',
                     'ip': '10.27.193.2',
-                    'protocol': 'contel',
+                    'protocol': 'console',
                     'port': '2037',
                     'username': 'admin',
                     'password': 'bulat'}
@@ -52,6 +52,7 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     #4a.Init node
     topology_manager_instance.init_topology_node('node1', module_manager_instance)
 
+    """
     #5.Get session id
     sesdict = module_manager_instance.connect_login_sessions_dict.items()
     logging.debug('session_dict: ' + str(sesdict))
@@ -69,7 +70,8 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     logout_args = {'connect_id': connect_id.get_id(), 'session_id': 'ses1:node1:telnet:10.27.192.38:23'}
     logout_res, nope = module_manager_instance.module_connect_logout(logout_args)
     logging.info('logout_res: ' + str(logout_res))
-
+    """
+    pass
     '''
     #8.Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")

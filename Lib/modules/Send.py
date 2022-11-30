@@ -1,6 +1,7 @@
 import pexpect
 import logging
 from Lib.SystemConstants import logging_type
+import time
 '''
 Class for send and
 recieve messages to Nodes.
@@ -20,7 +21,6 @@ class Send():
     def send_command(self, sesID, command):
         try:
             sesID.sendline(command)
-            logging.info("sesID before buffer: " + sesID.before.decode('utf-8').strip())
             '''
             result = sesID.expect(['>', '#'])
             while True:
@@ -29,7 +29,6 @@ class Send():
                     break
                 else:
                     logging.debug(str(result) + ' ' + sesID.before.decode('utf-8').strip())
-                    
             logging.info("sesID before buffer: " + sesID.before.decode('utf-8').strip())
             '''
 
@@ -48,6 +47,19 @@ class Send():
                 logging.info('sessionID before again: ' + sesID.before.decode('utf-8').strip())
             '''
 
+            return True
+        except pexpect.TIMEOUT:
+            logging.info('Session {} timed out'.format(str(sesID)))
+            logging.info(sesID.before.decode('utf-8').strip())
+            return False
+        except pexpect.EOF:
+            logging.info(('Session {} received unexpected output').format(str(sesID)))
+            logging.info(sesID.before.decode('utf-8').strip())
+            return False
+
+    def send_char(self, sesID, char):
+        try:
+            sesID.send(char)
             return True
         except pexpect.TIMEOUT:
             logging.info('Session {} timed out'.format(str(sesID)))

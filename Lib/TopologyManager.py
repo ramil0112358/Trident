@@ -207,24 +207,12 @@ class TopologyManager(object):
         command_to_send_args = {'hostname': node_name,
                                 'command': 'copy empty-config startup-config'}
         module_manager_instance.module_send_send_via_hostname(command_to_send_args)
-        time.sleep(10)
         command_to_send_args = {'hostname': node_name,
                                 'command': 'reload'}
         module_manager_instance.module_send_send_via_hostname(command_to_send_args)
-        time.sleep(10)
-        text_to_wait_args1 = {'sessionID': 'ses1:node1:telnet:10.27.193.2:2037',
-                              'text': 'reboot system? (y/n)'}
-        module_manager_instance.module_send_wait_text_via_sesid(text_to_wait_args1)
         command_to_send_args = {'hostname': node_name,
                                 'command': 'y'}
         module_manager_instance.module_send_send_via_hostname(command_to_send_args)
-
-        '''
-        text_to_wait_args = {'sessionID': node_name,
-                             'text': 'login:'}
-        module_manager_instance.module_send_wait_text_via_sesid(text_to_wait_args)
-        logging.info("login: found")
-        '''
 
         '''
         if mgmt info != None:

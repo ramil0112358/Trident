@@ -2,7 +2,7 @@ from Lib.modules.Connect import Connect
 from Lib.modules.Send import Send
 from Lib.SystemConstants import logging_type
 import logging
-import pdb
+from datetime import datetime
 
 class ModuleManager():
     '''
@@ -94,8 +94,20 @@ class ModuleManager():
                                 str(login_result_dict["ip"]) + ":" + \
                                 str(login_result_dict["port"])
                         # set data to session_dict
-                        self.connect_login_sessions_dict[sesid] = login_result_dict["session_instance"]
+                        session_instance = login_result_dict["session_instance"]
+                        self.connect_login_sessions_dict[sesid] = session_instance
                         logging.info('connection established, sessionID: ' + str(sesid))
+                        # logging session
+                        now = datetime.now()
+                        current_datetime = now.strftime("%d%m%Y_%H:%M:%S")
+                        log_filename = "/home/ramil/PycharmProjects/trident_logs/" + \
+                                       str(sesid) + "_" + str(current_datetime) + ".log"
+                        #log_filename = "/home/ramil/PycharmProjects/trident_logs/" + \
+                         #              str(sesid) + ":" + ".log"
+
+                        fout = open(log_filename, "wb+")
+                        session_instance.logfile = fout
+                        logging.info('log session ' + str(sesid) + ' to file ' + log_filename)
                         logging.debug(self.connect_login_sessions_dict)
                         result = 1
                     else:
@@ -143,6 +155,28 @@ class ModuleManager():
             # check send instance existance
             if 'send' in self.module_instance_dict:
                 result = self.module_instance_dict['send'].send_command(target_session, command)
+                if result == True:
+                    return 1, None
+                else:
+                    return 0, None
+            else:
+                logging.info('At least one login should be made')
+                return 0, None
+        else:
+            logging.info('SessionID: ' + str(sesID) + ' not found')
+            return 0, None
+
+    def module_send_send_char_via_sesid(self, args):
+        sesID = args['session_id']
+        char = args['char']
+        char = char.replace('_', ' ')
+        # check demanded session existance
+        if sesID in self.connect_login_sessions_dict:
+            target_session = self.connect_login_sessions_dict[sesID]
+            # print(self.module_instance_dict)
+            # check send instance existance
+            if 'send' in self.module_instance_dict:
+                result = self.module_instance_dict['send'].send_char(target_session, char)
                 if result == True:
                     return 1, None
                 else:

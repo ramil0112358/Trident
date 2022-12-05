@@ -3,6 +3,7 @@ from Lib.modules.Send import Send
 from Lib.SystemConstants import logging_type
 import logging
 from datetime import datetime
+import pexpect
 
 class ModuleManager():
     '''
@@ -36,6 +37,9 @@ class ModuleManager():
                         logging.info('established sessions: ' + sessionID)
                 return 1, None
         return 0, None
+
+    def get_sessions_dict(self):
+        return self.connect_login_sessions_dict
 
     def add_module_connect(self, args):
         #prepage args
@@ -165,7 +169,7 @@ class ModuleManager():
         else:
             logging.info('SessionID: ' + str(sesID) + ' not found')
             return 0, None
-
+    '''
     def module_send_send_char_via_sesid(self, args):
         sesID = args['session_id']
         char = args['char']
@@ -187,11 +191,12 @@ class ModuleManager():
         else:
             logging.info('SessionID: ' + str(sesID) + ' not found')
             return 0, None
+    '''
 
     #send command via first found session id for demanded hostname
-    def module_send_send_via_hostname(self, args):
-        receiver_hostname = args['hostname']
-        command = args['command']
+    def module_send_send_via_hostname(self,
+                                      receiver_hostname,
+                                      command):
         command = command.replace('_', ' ')
         for sessionID, session_instance in self.connect_login_sessions_dict.items():
             hostname = sessionID.split(":")[1]
@@ -222,6 +227,25 @@ class ModuleManager():
         else:
             logging.info('SessionID: ' + sesid + ' not found')
             return 0
+
+    def module_connect_wait_text_via_hostname(self, hostname_text_sender, text):
+        for sessionID, session_instance in self.connect_login_sessions_dict.items():
+            hostname = sessionID.split(":")[1]
+            if hostname == hostname_text_sender:
+                if 'send' in self.module_instance_dict:
+                    try:
+                        session_instance.expect(text)
+                        return 1
+                    except pexpect.TIMEOUT:
+                        logging.info('Expect timeout')
+                        return 0
+                else:
+                    logging.info('At least one login should be made')
+                    return 0
+            else:
+                logging.info('Hostname: ' + str(hostname_text_sender) + ' not found')
+        return 0
+
 
     def add_module_ixia(self, args):
         pass

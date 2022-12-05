@@ -79,7 +79,7 @@ class Connect():
         if self.protocol == 'telnet' or self.protocol == 'console':
             try:
                 credentials = 'telnet ' + str(self.ip) + ' ' + str(self.port)
-                self.session = pexpect.spawn(credentials, timeout=60)
+                self.session = pexpect.spawn(credentials, timeout=120)
                 logging.debug('session begin')
                 time.sleep(5)
                 logging.debug('5 sec pass')
@@ -167,7 +167,7 @@ class Connect():
             try:
                 credentials = 'ssh ' + self.username + '@' + str(self.ip)
                 # If ssh keys is not found, they will be added automatically
-                self.session = pexpect.spawn(credentials, timeout=30)
+                self.session = pexpect.spawn(credentials, timeout=120)
                 time.sleep(5)
                 self.session.expect('password:')
                 self.session.sendline(self.password)

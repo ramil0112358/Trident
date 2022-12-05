@@ -199,20 +199,55 @@ class TopologyManager(object):
         It creates first session with first session id in connect_login_sessions_dict dictionary.
         Thus send command to node in this method will be through module_send_send_via_hostname() 
         because this method uses first found session id for demanded hostname.
-        Other commands in further poart of test recommended to send via module_send_send_via_sesid() because
+        Other commands in further part of test recommended to send via module_send_send_via_sesid() because
         one hostname can have several sessions and session id's
         """
 
         #Clear old configuration.Changes takes effect after reboot.
-        command_to_send_args = {'hostname': node_name,
-                                'command': 'copy empty-config startup-config'}
-        module_manager_instance.module_send_send_via_hostname(command_to_send_args)
-        command_to_send_args = {'hostname': node_name,
-                                'command': 'reload'}
-        module_manager_instance.module_send_send_via_hostname(command_to_send_args)
-        command_to_send_args = {'hostname': node_name,
-                                'command': 'y'}
-        module_manager_instance.module_send_send_via_hostname(command_to_send_args)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
+        logging.info('Start reload device')
+        module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
+        module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+        '''
+        #
+        sessions_dictionary = module_manager_instance.get_sessions_dict()
+        sesid = list(sessions_dictionary.keys())[0]
+        logout_args = {'connect_id': 'con1',
+                       'session_id': sesid}
+        module_manager_instance.module_connect_logout(logout_args)
+        time.sleep(120)
+        logging.info('Finish reload device')
+        '''
+        #Authentication again
+        module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:')
+        logging.info('Reload device complete')
+        module_manager_instance.module_send_send_via_hostname(node_name, 'admin')
+        module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Password:')
+        module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'enable')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'int eth0')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'ip address 10.27.192.38/24')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'ip route 0.0.0.0 0.0.0.0 10.27.192.254')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
+        time.sleep(5)
+        module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
+        time.sleep(30)
+        sessions_dictionary = module_manager_instance.get_sessions_dict()
+        sesid = list(sessions_dictionary.keys())[0]
+        logout_args = {'connect_id': 'con1',
+                       'session_id': sesid}
+        logging.info('Logout')
+        module_manager_instance.module_connect_logout(logout_args)
+
 
         '''
         if mgmt info != None:

@@ -32,3 +32,4 @@ ixia_server_ip = "10.27.193.3"
 
 #dut sofware update
 software_server_ip = "10.121.0.147"
+

@@ -185,62 +185,87 @@ class TopologyManager(object):
     def init_topology_node(self,
                            node_name,
                            module_manager_instance,
+                           hostname=None,
                            mgmt_info=None,
                            software_image_path=None,
                            new_config_path=None) -> bool:
         """
         1.Clear node's old configuration
-        2.Set new management ip and default route
+        2.Set new management ip and default route. mgmt_info = {ip:"ip",mask:"mask",gateway:"gateway"}
         3.Upgrade node's software
         4.Set new configuration
         """
         """
-        First connection to node gonna be via console server.
+        First connection to node going to be via console server.
         It creates first session with first session id in connect_login_sessions_dict dictionary.
-        Thus send command to node in this method will be through module_send_send_via_hostname() 
+        Thus send command to node in this method provided through module_send_send_via_hostname() 
         because this method uses first found session id for demanded hostname.
-        Other commands in further part of test recommended to send via module_send_send_via_sesid() because
-        one hostname can have several sessions and session id's
+        Other commands in further parts of test recommended to send via module_send_send_via_sesid() because
+        one node have one hostname and several sessions and session id's
         """
 
         #Clear old configuration.Changes takes effect after reboot.
         module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
-        logging.info('Start reload device')
         module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
         module_manager_instance.module_send_send_via_hostname(node_name, 'y')
-        '''
-        #
-        sessions_dictionary = module_manager_instance.get_sessions_dict()
-        sesid = list(sessions_dictionary.keys())[0]
-        logout_args = {'connect_id': 'con1',
-                       'session_id': sesid}
-        module_manager_instance.module_connect_logout(logout_args)
-        time.sleep(120)
-        logging.info('Finish reload device')
-        '''
-        #Authentication again
+        logging.info('Clear old configuration complete')
+
         module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:')
         logging.info('Reload device complete')
         module_manager_instance.module_send_send_via_hostname(node_name, 'admin')
         module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Password:')
         module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
+        #switch needs times to complete authentication
         time.sleep(5)
         module_manager_instance.module_send_send_via_hostname(node_name, 'enable')
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'int eth0')
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'ip address 10.27.192.38/24')
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'ip route 0.0.0.0 0.0.0.0 10.27.192.254')
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
-        time.sleep(30)
+
+        if hostname != None:
+            module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'hostname ' + hostname)
+            module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
+            #switch needs times to save configuration
+            time.sleep(5)
+            logging.info('Hostname configuration complete')
+
+        #check if new management configurayion needed
+        if mgmt_info != None:
+            module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'int eth0')
+            module_manager_instance.module_send_send_via_hostname(node_name,
+                                                                  'ip address ' +
+                                                                  mgmt_info["ip"] +
+                                                                  '/' + mgmt_info["mask"])
+            module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
+            module_manager_instance.module_send_send_via_hostname(node_name,
+                                                                  'ip route 0.0.0.0 0.0.0.0 ' +
+                                                                  mgmt_info["gateway"])
+            module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
+            #switch needs times to save configuration
+            time.sleep(5)
+            logging.info('Management configuration complete')
+
+        '''
+        #check if new software update needed
+        if software_image_path != None:
+            module_manager_instance.module_send_send_via_hostname(node_name, 'copy ftp ftp://' +
+                                                                  software_image_path + ' backup')
+            wait_result = module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Copy Success')
+            if wait_result == 1:
+                logging.info('Software image copy complete')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'boot backup')
+            module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'admin:')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
+            logging.info('Software update complete')
+        #if new_config_path != None:
+
+        #Final reload
+        module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
+        module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
+        module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+        '''
+
         sessions_dictionary = module_manager_instance.get_sessions_dict()
         sesid = list(sessions_dictionary.keys())[0]
         logout_args = {'connect_id': 'con1',
@@ -248,19 +273,7 @@ class TopologyManager(object):
         logging.info('Logout')
         module_manager_instance.module_connect_logout(logout_args)
 
-
-        '''
-        if mgmt info != None:
-            #mgmt = [mgmt_ip, mgmt_mask, mgmt_gateway]
-            mgmt_ip = mgmt_info[0]
-            mgmt_mask = mgmt_info[1]
-            mgmt_gateway = mgmt_info[2]
-        '''
         return True
-
-
-
-
 
     def update_topology_node_software(self, node_name, software_image_path):
         """

@@ -197,7 +197,7 @@ class ModuleManager():
     def module_send_send_via_hostname(self,
                                       receiver_hostname,
                                       command):
-        command = command.replace('_', ' ')
+        #command = command.replace('_', ' ')
         for sessionID, session_instance in self.connect_login_sessions_dict.items():
             hostname = sessionID.split(":")[1]
             if hostname == receiver_hostname:

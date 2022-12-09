@@ -191,11 +191,11 @@ class TopologyManager(object):
                            new_config_path=None) -> bool:
         """
         1.Clear node's old configuration
-        2.Set new management ip and default route. mgmt_info = {ip:"ip",mask:"mask",gateway:"gateway"}
-        3.Upgrade node's software
-        4.Set new configuration
-        """
-        """
+        2.Set new hostname
+        3.Set new management ip and default route. mgmt_info = {ip:"ip",mask:"mask",gateway:"gateway"}
+        4.Upgrade node's software
+        5.Set new configuration
+
         First connection to node going to be via console server.
         It creates first session with first session id in connect_login_sessions_dict dictionary.
         Thus send command to node in this method provided through module_send_send_via_hostname() 
@@ -209,13 +209,18 @@ class TopologyManager(object):
         module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
         module_manager_instance.module_send_send_via_hostname(node_name, 'y')
         logging.info('Clear old configuration complete')
+        # device needs about 120 sec to preform standart reboot
+        logging.info('Reloading device...')
+        time.sleep(120)
 
-        module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:')
+        #here device reboots and we are waiting...
+
+        assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
         logging.info('Reload device complete')
         module_manager_instance.module_send_send_via_hostname(node_name, 'admin')
-        module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Password:')
+        assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Password:') == 1
         module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
-        #switch needs times to complete authentication
+        #switch needs time to complete authentication
         time.sleep(5)
         module_manager_instance.module_send_send_via_hostname(node_name, 'enable')
 
@@ -224,7 +229,7 @@ class TopologyManager(object):
             module_manager_instance.module_send_send_via_hostname(node_name, 'hostname ' + hostname)
             module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
             module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
-            #switch needs times to save configuration
+            #switch needs time to save configuration
             time.sleep(5)
             logging.info('Hostname configuration complete')
 
@@ -242,28 +247,46 @@ class TopologyManager(object):
                                                                   mgmt_info["gateway"])
             module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
             module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
-            #switch needs times to save configuration
+            #switch needs time to save configuration
             time.sleep(5)
             logging.info('Management configuration complete')
 
-        '''
         #check if new software update needed
         if software_image_path != None:
             module_manager_instance.module_send_send_via_hostname(node_name, 'copy ftp ftp://' +
                                                                   software_image_path + ' backup')
-            wait_result = module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Copy Success')
-            if wait_result == 1:
-                logging.info('Software image copy complete')
+            #device needs about 120 sec to download new software image
+            logging.info('Downloading image from ' + software_image_path + '...')
+            time.sleep(120)
+            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, hostname + '#') == 1
+            logging.info('Download complete')
+
             module_manager_instance.module_send_send_via_hostname(node_name, 'boot backup')
-            module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'admin:')
+            #device needs times to offer password
+            time.sleep(5)
+            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'admin:') == 1
             module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
-            logging.info('Software update complete')
+            #device needs times to apply new software image
+            time.sleep(5)
+            module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+            #device needs about 200 sec to reload with new software image
+            logging.info('Updating device...')
+            time.sleep(200)
+
+            # here device reboots and we are waiting...
+
+            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
+            logging.info('Update complete')
+
+
         #if new_config_path != None:
 
+
         #Final reload
-        module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
-        module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
-        module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+        #module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
+        #module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
+        #module_manager_instance.module_send_send_via_hostname(node_name, 'y')
         '''
 
         sessions_dictionary = module_manager_instance.get_sessions_dict()
@@ -272,7 +295,7 @@ class TopologyManager(object):
                        'session_id': sesid}
         logging.info('Logout')
         module_manager_instance.module_connect_logout(logout_args)
-
+        '''
         return True
 
     def update_topology_node_software(self, node_name, software_image_path):

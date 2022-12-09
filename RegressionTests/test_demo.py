@@ -1,7 +1,6 @@
 import logging
 import pytest
-from Lib.modules.Ixia import Ixia
-import time
+
 
 # ------------------------init functions--------------------------
 @pytest.fixture
@@ -50,10 +49,20 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     assert login_res == 1
 
     #4a.Init node
-    hostname = "TR1"
+    hostname = "TR202"
     mgmt_info = {"ip": "10.27.192.38", "mask": "24", "gateway": "10.27.192.254"}
+
     software_image_path = \
         "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.160/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.2-GA2.0-full"
+
+    '''
+    software_image_path = \
+        "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.165/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.3-GA2.0-full"
+    '''
+    '''
+    software_image_path = \
+        "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.237/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.4-GA2.0-full"
+    '''
     topology_manager_instance.init_topology_node('node1',
                                                  module_manager_instance,
                                                  hostname,

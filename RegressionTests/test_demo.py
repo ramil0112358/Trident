@@ -12,12 +12,12 @@ def init_test_environment(init_environment_instances):
            topology_manager_instance, \
            module_manager_instance
 
-
+#-------------------------test setup and teardown functions--------------------
 @pytest.fixture
-def test_l2_bridging_broadcast_fixture(init_test_environment):
+def test_demo_fixture(init_test_environment):
     topology_list, topology_manager_instance, module_manager_instance = init_test_environment
-    # Setup
-    logging.info('Broadcast test setup')
+    #Setup section
+    logging.info('Test demo setup')
 
     #1.Create topology
     top_args = {'topology_name': 'topology1'}
@@ -49,25 +49,35 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     assert login_res == 1
 
     #4a.Init node
-    hostname = "TR202"
+    hostname = "TR3"
     mgmt_info = {"ip": "10.27.192.38", "mask": "24", "gateway": "10.27.192.254"}
-
+    '''
     software_image_path = \
         "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.160/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.2-GA2.0-full"
-
+    '''
     '''
     software_image_path = \
         "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.165/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.3-GA2.0-full"
     '''
-    '''
+
     software_image_path = \
         "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.237/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.4-GA2.0-full"
+
+    new_config_path = "/home/ramil/PycharmProjects/trident/RegressionTests/demo_config_2"
     '''
     topology_manager_instance.init_topology_node('node1',
                                                  module_manager_instance,
                                                  hostname,
                                                  mgmt_info,
-                                                 software_image_path)
+                                                 software_image_path,
+                                                 new_config_path)
+    '''
+    topology_manager_instance.init_topology_node('node1',
+                                                 module_manager_instance,
+                                                 None,
+                                                 mgmt_info,
+                                                 None,
+                                                 new_config_path)
 
     """
     #5.Get session id
@@ -168,15 +178,15 @@ def test_l2_bridging_broadcast_fixture(init_test_environment):
     """
 
     yield
-    # Teardown
-    logging.info('Broadcast test teardown')
+    #Teardown section
+    logging.info('Test demo teardown')
 
+# ------------------------test core functions--------------------------
 
-# ------------------------test functions--------------------------
-
-def test_l2_bridging_broadcast_core(test_l2_bridging_broadcast_fixture):
-    module_manager_instance = test_l2_bridging_broadcast_fixture
-    logging.info('Broadcast test core')
+def test_demo_body(test_demo_fixture):
+    module_manager_instance = test_demo_fixture
+    logging.info('Test demo body')
     t1 = 1
     t2 = 1
     assert t1 == t2
+

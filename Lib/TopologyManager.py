@@ -4,6 +4,7 @@ from Lib.SystemConstants import MAX_TOPS, devices_attr_conf_file_path, logging_t
 import os.path
 import logging
 import time
+import paramiko
 
 class TopologyManager(object):
     '''
@@ -38,10 +39,10 @@ class TopologyManager(object):
                 return 0, None
             for topology in self.topology_list:
                 if topology.name == name:
-                    logging.info('topology ' + str(name) + ' already exist')
+                    logging.info('Topology "' + str(name) + '" already exist')
                     return 0, None
         self.topology_list.append(Topology(name))
-        logging.info('topology ' + str(name) + ' successfully created')
+        logging.info('Topology "' + str(name) + '" successfully created')
         return 1, None
 
     #show current topology
@@ -188,7 +189,7 @@ class TopologyManager(object):
                            hostname=None,
                            mgmt_info=None,
                            software_image_path=None,
-                           new_config_path=None) -> bool:
+                           source_config_filepath=None) -> bool:
         """
         1.Clear node's old configuration
         2.Set new hostname
@@ -204,6 +205,7 @@ class TopologyManager(object):
         one node have one hostname and several sessions and session id's
         """
 
+        """###
         #Clear old configuration.Changes takes effect after reboot.
         module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
         module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
@@ -233,7 +235,7 @@ class TopologyManager(object):
             time.sleep(5)
             logging.info('Hostname configuration complete')
 
-        #check if new management configurayion needed
+        #check if new management configuration needed
         if mgmt_info != None:
             module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')
             module_manager_instance.module_send_send_via_hostname(node_name, 'int eth0')
@@ -251,7 +253,7 @@ class TopologyManager(object):
             time.sleep(5)
             logging.info('Management configuration complete')
 
-        #check if new software update needed
+        #check if software update needed
         if software_image_path != None:
             module_manager_instance.module_send_send_via_hostname(node_name, 'copy ftp ftp://' +
                                                                   software_image_path + ' backup')
@@ -274,14 +276,47 @@ class TopologyManager(object):
             logging.info('Updating device...')
             time.sleep(200)
 
-            # here device reboots and we are waiting...
+            #here device reboots and we are waiting...
 
             assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
             logging.info('Update complete')
+        ###"""
 
+        #check if new software update needed
+        if source_config_filepath != None:
+            #connect to device via sftp with paramiko
+            #open a transport
+            host, port = mgmt_info["ip"], 22
+            transport = paramiko.Transport((host, port))
 
-        #if new_config_path != None:
+            #authentication
+            username, password = "admin", "bulat"
+            transport.connect(None, username, password)
 
+            #connect
+            sftp = paramiko.SFTPClient.from_transport(transport)
+
+            '''
+            #download
+            filepath = "/usr/local/etc/ZebOS.conf"
+            localpath = "/home/ramil/PycharmProjects/trident/RegressionTests/ZebOS.conf"
+            sftp.get(filepath, localpath)
+            '''
+
+            #upload
+            #convert source configuration file to list
+            source_config_file = open(source_config_filepath, "r")
+            source_config_file_list = source_config_file.read()
+            source_config_file.close()
+            #write source list to destination configuration file on device per line
+            dest_config_filepath = "/usr/local/etc/ZebOS.conf"
+            remote_config_file = sftp.open(dest_config_filepath, "w", -1)
+            remote_config_file.writelines(source_config_file_list)
+            remote_config_file.close()
+
+            #close
+            if sftp: sftp.close()
+            if transport: transport.close()
 
         #Final reload
         #module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')

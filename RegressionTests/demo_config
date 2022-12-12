@@ -1,0 +1,331 @@
+!
+service password-encryption
+!
+hostname test_config
+!
+logging console 7
+logging monitor 7
+!
+no ip domain-lookup
+bridge 1 protocol mstp
+forwarding profile l2-profile-one
+feature telnet
+feature ssh
+no feature tacacs+
+no feature ldap
+no feature dhcp-server
+no ntp enable
+username admin role network-admin password encrypted $6$bJoWhcc.$yPo6TVs6ArCmo3M05Gc8GxJWxPhj1zyAoEC5TOIUEITF14Xm9W1ZNgJ37aawInnt9N4Hb.TUlz7ZFNrv8IGhT.
+ethernet cfm enable
+sFlow disable
+!
+spanning-tree mst configuration
+!
+ip pim register-rp-reachability
+!
+interface eth0
+ no switchport
+ ip address 10.27.192.40/24
+!
+interface lo
+ no switchport
+ ip address 127.0.0.1/8
+ ipv6 address ::1/128
+!
+interface xe1
+ switchport
+ bridge-group 1
+!
+interface xe2
+ switchport
+ bridge-group 1
+!
+interface xe3
+ switchport
+ bridge-group 1
+!
+interface xe4
+ switchport
+ bridge-group 1
+!
+interface xe5
+ switchport
+ bridge-group 1
+!
+interface xe6
+ switchport
+ bridge-group 1
+!
+interface xe7
+ switchport
+ bridge-group 1
+!
+interface xe8
+ switchport
+ bridge-group 1
+!
+interface xe9
+ switchport
+ bridge-group 1
+!
+interface xe10
+ switchport
+ bridge-group 1
+!
+interface xe11
+ switchport
+ bridge-group 1
+!
+interface xe12
+ switchport
+ bridge-group 1
+!
+interface xe13
+ switchport
+ bridge-group 1
+!
+interface xe14
+ switchport
+ bridge-group 1
+!
+interface xe15
+ switchport
+ bridge-group 1
+!
+interface xe16
+ switchport
+ bridge-group 1
+!
+interface xe17
+ switchport
+ bridge-group 1
+!
+interface xe18
+ switchport
+ bridge-group 1
+!
+interface xe19
+ switchport
+ bridge-group 1
+!
+interface xe20
+ switchport
+ bridge-group 1
+!
+interface xe21
+ switchport
+ bridge-group 1
+!
+interface xe22
+ switchport
+ bridge-group 1
+!
+interface xe23
+ switchport
+ bridge-group 1
+!
+interface xe24
+ switchport
+ bridge-group 1
+!
+interface xe25
+ switchport
+ bridge-group 1
+!
+interface xe26
+ switchport
+ bridge-group 1
+!
+interface xe27
+ switchport
+ bridge-group 1
+!
+interface xe28
+ switchport
+ bridge-group 1
+!
+interface xe29
+ switchport
+ bridge-group 1
+!
+interface xe30
+ switchport
+ bridge-group 1
+!
+interface xe31
+ switchport
+ bridge-group 1
+!
+interface xe32
+ switchport
+ bridge-group 1
+!
+interface xe33
+ switchport
+ bridge-group 1
+!
+interface xe34
+ switchport
+ bridge-group 1
+!
+interface xe35
+ switchport
+ bridge-group 1
+!
+interface xe36
+ switchport
+ bridge-group 1
+!
+interface xe37
+ switchport
+ bridge-group 1
+!
+interface xe38
+ switchport
+ bridge-group 1
+!
+interface xe39
+ switchport
+ bridge-group 1
+!
+interface xe40
+ switchport
+ bridge-group 1
+!
+interface xe41
+ switchport
+ bridge-group 1
+!
+interface xe42
+ switchport
+ bridge-group 1
+!
+interface xe43
+ switchport
+ bridge-group 1
+!
+interface xe44
+ switchport
+ bridge-group 1
+!
+interface xe45
+ switchport
+ bridge-group 1
+!
+interface xe46
+ switchport
+ bridge-group 1
+!
+interface xe47
+ switchport
+ bridge-group 1
+!
+interface xe48
+ switchport
+ bridge-group 1
+!
+interface xe49/1
+ switchport
+ bridge-group 1
+!
+interface xe49/2
+ switchport
+ bridge-group 1
+!
+interface xe49/3
+ switchport
+ bridge-group 1
+!
+interface xe49/4
+ switchport
+ bridge-group 1
+!
+interface xe50/1
+ switchport
+ bridge-group 1
+!
+interface xe50/2
+ switchport
+ bridge-group 1
+!
+interface xe50/3
+ switchport
+ bridge-group 1
+!
+interface xe50/4
+ switchport
+ bridge-group 1
+!
+interface xe51/1
+ switchport
+ bridge-group 1
+!
+interface xe51/2
+ switchport
+ bridge-group 1
+!
+interface xe51/3
+ switchport
+ bridge-group 1
+!
+interface xe51/4
+ switchport
+ bridge-group 1
+!
+interface xe52/1
+ switchport
+ bridge-group 1
+!
+interface xe52/2
+ switchport
+ bridge-group 1
+!
+interface xe52/3
+ switchport
+ bridge-group 1
+!
+interface xe52/4
+ switchport
+ bridge-group 1
+!
+interface xe53/1
+ switchport
+ bridge-group 1
+!
+interface xe53/2
+ switchport
+ bridge-group 1
+!
+interface xe53/3
+ switchport
+ bridge-group 1
+!
+interface xe53/4
+ switchport
+ bridge-group 1
+!
+interface xe54/1
+ switchport
+ bridge-group 1
+!
+interface xe54/2
+ switchport
+ bridge-group 1
+!
+interface xe54/3
+ switchport
+ bridge-group 1
+!
+interface xe54/4
+ switchport
+ bridge-group 1
+!
+ip route 0.0.0.0/0 10.27.192.254
+!
+line con 0
+ login
+line vty 0 39
+ login
+!
+end
+

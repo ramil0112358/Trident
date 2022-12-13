@@ -204,14 +204,15 @@ class TopologyManager(object):
         Other commands in further parts of test recommended to send via module_send_send_via_sesid() because
         one node have one hostname and several sessions and session id's
         """
+        reboot_flag = False
+        long_reboot_flag = False
 
-        """###
-        #Clear old configuration.Changes takes effect after reboot.
+        #clear old configuration.Changes takes effect after reboot.
         module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
         module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
         module_manager_instance.module_send_send_via_hostname(node_name, 'y')
         logging.info('Clear old configuration complete')
-        # device needs about 120 sec to preform standart reboot
+        #device needs about 120 sec to perform standart reboot
         logging.info('Reloading device...')
         time.sleep(120)
 
@@ -280,7 +281,6 @@ class TopologyManager(object):
 
             assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
             logging.info('Update complete')
-        ###"""
 
         #check if new software update needed
         if source_config_filepath != None:
@@ -318,11 +318,16 @@ class TopologyManager(object):
             if sftp: sftp.close()
             if transport: transport.close()
 
-        #Final reload
-        #module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
-        #module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
-        #module_manager_instance.module_send_send_via_hostname(node_name, 'y')
-        '''
+            module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+            # device needs about 120 sec to perform standart reboot
+            logging.info('Updateing device config...')
+            time.sleep(120)
+
+            # here device reboots and we are waiting...
+
+            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
+            logging.info('Config update complete')
 
         sessions_dictionary = module_manager_instance.get_sessions_dict()
         sesid = list(sessions_dictionary.keys())[0]
@@ -330,16 +335,8 @@ class TopologyManager(object):
                        'session_id': sesid}
         logging.info('Logout')
         module_manager_instance.module_connect_logout(logout_args)
-        '''
+
         return True
-
-    def update_topology_node_software(self, node_name, software_image_path):
-        """
-        Update node software can be after management interface configuration only
-        """
-
-    def update_topology_node_config(self, new_config):
-        pass
 
     #add link to topology
     def add_topology_link(self, args):

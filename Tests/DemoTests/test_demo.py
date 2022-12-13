@@ -44,39 +44,20 @@ def test_demo_fixture(init_test_environment):
     
     #4.Login to node
     logging.info(connect_id.get_summary())
-    login_res = module_manager_instance.module_connect_login(login_args)
-    logging.debug('login_res: ' + str(login_res))
-    assert login_res == 1
+    assert module_manager_instance.module_connect_login(login_args) == 1
 
     #4a.Init node
-    hostname = "TR3"
+    hostname = "TR1"
     mgmt_info = {"ip": "10.27.192.38", "mask": "24", "gateway": "10.27.192.254"}
-    '''
-    software_image_path = \
-        "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.160/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.2-GA2.0-full"
-    '''
-    '''
-    software_image_path = \
-        "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.165/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.3-GA2.0-full"
-    '''
-
-    software_image_path = \
-        "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.237/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.4-GA2.0-full"
-
-    new_config_path = "/home/ramil/PycharmProjects/trident/RegressionTests/demo_config_2"
-    '''
+    #software_image_path = "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.160/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.2-GA2.0-full"
+    #software_image_path = "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.165/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.3-GA2.0-full"
+    software_image_path = "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.237/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.4-GA2.0-full"
+    new_config_path = "/Tests/RegressionTests/demo_config"
     topology_manager_instance.init_topology_node('node1',
                                                  module_manager_instance,
                                                  hostname,
                                                  mgmt_info,
                                                  software_image_path,
-                                                 new_config_path)
-    '''
-    topology_manager_instance.init_topology_node('node1',
-                                                 module_manager_instance,
-                                                 None,
-                                                 mgmt_info,
-                                                 None,
                                                  new_config_path)
 
     """

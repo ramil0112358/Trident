@@ -5,6 +5,7 @@ hostname test_config
 !
 logging console 7
 logging monitor 7
+banner modt ###autotest###
 !
 no ip domain-lookup
 bridge 1 protocol mstp

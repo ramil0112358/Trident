@@ -150,10 +150,8 @@ class ModuleManager():
 
     #def module_connect_nodecheck(self, args):
 
-    def module_send_send_via_sesid(self, args):
-        sesID = args['session_id']
-        command = args['command']
-        command = command.replace('_',' ')
+    def send_command_via_sesid(self, sesID, command):
+        #command = command.replace('_',' ')
         # check demanded session existance
         if sesID in self.connect_login_sessions_dict:
             target_session = self.connect_login_sessions_dict[sesID]
@@ -196,9 +194,7 @@ class ModuleManager():
     '''
 
     #send command via first found session id for demanded hostname
-    def module_send_send_via_hostname(self,
-                                      receiver_hostname,
-                                      command):
+    def send_commad_via_hostname(self, receiver_hostname, command):
         #command = command.replace('_', ' ')
         for sessionID, session_instance in self.connect_login_sessions_dict.items():
             hostname = sessionID.split(":")[1]

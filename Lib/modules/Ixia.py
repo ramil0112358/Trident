@@ -151,14 +151,9 @@ class Ixia():
             return 1
         return 0
 
-    def add_protocol_ethernet(self,
-                    device_group_topology_name,
-                    device_group_name,
-                    enablevlan=False,
-                    vlancount=0,
-                    vlanid_first = None)->bool:
-
-        #vlan multitag (vlancount > 1) doesnt support yet
+    def get_device_group_instance_by_name(self,
+                                          device_group_topology_name,
+                                          device_group_name):
         device_group_instance = None
         logging.debug("current device_group_dict: " + str(self.device_group_dict))
         device_group_list = self.device_group_dict[device_group_topology_name]
@@ -169,6 +164,16 @@ class Ixia():
             if device_group.Name == device_group_name:
                 device_group_instance = device_group
 
+        return device_group_instance
+
+    def add_protocol_ethernet(self,
+                    device_group_topology_name,
+                    device_group_name,
+                    enablevlan=False,
+                    vlancount=0, #vlan multitag (vlancount > 1) doesnt support yet
+                    vlanid_first=None)->bool:
+
+        device_group_instance = self.get_device_group_instance_by_name(device_group_topology_name,device_group_name)
         if device_group_instance == None:
             return 0
         else:
@@ -191,6 +196,20 @@ class Ixia():
                     vlan_instance = ethernet_instance.Vlan.find()
                     vlan_instance.VlanId.Increment(vlanid_first, '1')
             #self.ethernet_list.append(ethernet_instance)
+            logging.info("Ethernet " + str(ethernet_instance) + "successfully created")
+            return 1
+
+    def remove_protocol_ethernet(self,
+                                device_group_topology_name,
+                                device_group_name,
+                                ethernet_name) -> bool:
+
+        device_group_instance = self.get_device_group_instance_by_name(device_group_topology_name, device_group_name)
+        if device_group_instance == None:
+            return 0
+        else:
+            target_ethernet = device_group_instance.Ethernet.find(Name=ethernet_name)
+            target_ethernet.remove()
             return 1
 
     def add_protocol_ipv4(self,
@@ -236,6 +255,19 @@ class Ixia():
                 ipv4_instance.ResolveGateway.Single(resolve_gateway)
             return 1
         return 0
+
+    def remove_protocol_ipv4(self,
+                             device_group_topology_name,
+                             device_group_name,
+                             ipv4_name) -> bool:
+
+        device_group_instance = self.get_device_group_instance_by_name(device_group_topology_name, device_group_name)
+        if device_group_instance == None:
+            return 0
+        else:
+            target_ipv4 = device_group_instance.Ethernet.find(Name=ipv4_name)
+            target_ipv4.remove()
+            return 1
 
     def add_traffic_item(self, ti_name, ti_type, ti_data) -> bool:
 

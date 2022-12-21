@@ -121,6 +121,7 @@ def test_demo_l2_vlan_fixture(init_environment_instances):
 def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
     core = init_environment_instances
     ixia_instance = core.ixia
+    module_manager = core.module_manager
 
     # Launch traffic item for 30 seconds
     assert ixia_instance.apply_and_start_traffic_items() == 1
@@ -133,26 +134,27 @@ def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
     logging.info("Traffic_items packet_loss: " + str(packet_loss))
     assert float(packet_loss) == 0.000
 
+    #remove vlan tag ethernet protocols and set ethernet protocol w/o vlan tagging
+    ixia_instance.remove_protocol_ethernet("Topology1", "DeviceGroupA", "Ethernet 1")
+    ixia_instance.remove_protocol_ethernet("Topology2", "DeviceGroupB", "Ethernet 2")
 
-    '''
+    assert ixia_instance.add_protocol_ethernet("Topology1","DeviceGroupA") == 1
+    assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB") == 1
+
     # Get session id
-    sesdict = module_manager_instance.connect_login_sessions_dict.items()
+    sesdict = module_manager.connect_login_sessions_dict.items()
     logging.info('session_dict: ' + str(sesdict))
 
     # Send command via session id
-    command_args = {'session_id': 'ses1:tr1:console:10.27.193.2:2037',
-                    'command': 'conf t'}
-    module_manager_instance.module_send_send_via_sesid(command_args)
-    command_args = {'session_id': 'ses1:tr1:console:10.27.193.2:2037',
-                    'command': 'vlan 100-104 bridge 1'}
-    module_manager_instance.module_send_send_via_sesid(command_args)
-    command_args = {'session_id': 'ses1:tr1:console:10.27.193.2:2037',
-                    'command': 'wr'}
-    module_manager_instance.module_send_send_via_sesid(command_args)
-    '''
-    '''
-    # Logout
-    logout_args = {'connect_id': connect_id.get_id(), 'session_id': 'ses1:tr1:console:10.27.193.2:2037'}
-    logout_res = module_manager_instance.module_connect_logout(logout_args)
-    logging.info('logout_res: ' + str(logout_res))
-    '''
+    sesid = 'ses1:tr1:console:10.27.193.2:2037'
+    module_manager.send_command_via_sesid(sesid, 'conf t')
+    module_manager.send_command_via_sesid(sesid, 'int xe1-2')
+    module_manager.send_command_via_sesid(sesid, 'switchport mode access')
+    module_manager.send_command_via_sesid(sesid, 'swithport access vlan 100')
+    module_manager.send_command_via_sesid(sesid, 'exit')
+    module_manager.send_command_via_sesid(sesid, 'wr')
+
+
+
+
+

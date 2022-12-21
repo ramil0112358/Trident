@@ -45,7 +45,7 @@ class ModuleManager():
         #prepage args
         #self.visualizer.message(args, True)
         topology_name = args['topology']
-        hostname = args['hostname']
+        name = args['name']
         ip = args['ip']
         protocol = args['protocol']
         port = args['port']
@@ -56,7 +56,7 @@ class ModuleManager():
         for topology in topology_list:
             if topology.get_name() == topology_name:
                 for node in topology.get_nodelist():
-                    if node.hostname == hostname:
+                    if node.name == name:
                         self.connect_module_id_counter += 1
                         new_connect = Connect(node, ip, protocol, port,
                                               username, password, self.connect_module_id_counter)
@@ -67,7 +67,7 @@ class ModuleManager():
                         #self.visualizer.message('self.module_instance_dict[connect]:' +
                         #                        str(self.module_instance_dict['connect']), logging_type)
                         return 1, None
-                logging.info('node '+ str(hostname) + ' not found')
+                logging.info('node '+ str(name) + ' not found')
                 return 0, None
         logging.info('topology ' + str(topology_name) + ' not found')
         return 0, None
@@ -103,11 +103,13 @@ class ModuleManager():
                         logging.info('connection established, sessionID: ' + str(sesid))
                         # logging session
                         now = datetime.now()
+                        '''
                         current_datetime = now.strftime("%d%m%Y_%H:%M:%S")
                         log_filename = "/home/ramil/PycharmProjects/trident_logs/" + \
                                        str(sesid) + "_" + str(current_datetime) + ".log"
-                        #log_filename = "/home/ramil/PycharmProjects/trident_logs/" + \
-                         #              str(sesid) + ":" + ".log"
+                        '''
+                        log_filename = "/home/ramil/PycharmProjects/trident_logs/" + \
+                                       str(sesid) + ".log"
 
                         fout = open(log_filename, "wb+")
                         session_instance.logfile = fout
@@ -140,11 +142,11 @@ class ModuleManager():
                             if result == True:
                                 logging.info('SessionID: ' + logout_session_id +
                                                         ' successfully disconnected')
-                                return 1, None
+                                return 1
                     logging.info('SessionID: ' + logout_session_id + ' not found')
-                    return 0, None
+                    return 0
         logging.info('ConnectionID: ' + connect_id + ' not found')
-        return 0, None
+        return 0
 
     #def module_connect_nodecheck(self, args):
 

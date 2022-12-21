@@ -455,6 +455,9 @@ class Ixia():
     def start_all_protocols(self) -> bool:
         self.ixia_ixnetwork.StartAllProtocols()
 
+    def stop_all_protocols(self) -> bool:
+        self.ixia_ixnetwork.StopAllProtocols()
+
 
 
 

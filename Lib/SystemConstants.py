@@ -29,7 +29,13 @@ logging_type = ("print")
 
 #ixia
 ixia_server_ip = "10.27.193.3"
+PORT_A = "2/1"
+PORT_B = "2/2"
+PORT_C = "1/1"
 
 #dut sofware update
 software_server_ip = "10.121.0.147"
+
+#dut software image path
+dut_software_image_path = "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.237/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.4-GA2.0-full"
 

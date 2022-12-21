@@ -24,12 +24,12 @@ def test_demo_fixture(init_test_environment):
     topology_manager_instance.add_topology(top_args)
     
     #2.Create node
-    node_args = {'hostname': 'node1',
+    node_args = {'name': 'node1',
                  'type': '751048x6q',
                  'topology': 'topology1'}
     topology_manager_instance.add_topology_node(node_args)
     connect_args = {'topology': 'topology1',
-                    'hostname': 'node1',
+                    'name': 'node1',
                     'ip': '10.27.193.2',
                     'protocol': 'console',
                     'port': '2037',

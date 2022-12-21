@@ -8,19 +8,19 @@ logging monitor 7
 !
 no ip domain-lookup
 bridge 1 protocol mstp
-nvo vxlan enable
 forwarding profile l2-profile-one
 feature telnet
 feature ssh
 no feature tacacs+
 no feature ldap
+no feature dhcp-server
 no ntp enable
 username admin role network-admin password encrypted $6$bJoWhcc.$yPo6TVs6ArCmo3M05Gc8GxJWxPhj1zyAoEC5TOIUEITF14Xm9W1ZNgJ37aawInnt9N4Hb.TUlz7ZFNrv8IGhT.
 ethernet cfm enable
 sFlow disable
 !
 vlan database
- vlan 555 bridge 1 state enable
+ vlan 100-104 bridge 1 state enable
 !
 spanning-tree mst configuration
 !
@@ -33,32 +33,24 @@ interface eth0
 interface lo
  no switchport
  ip address 127.0.0.1/8
- ip address 192.168.100.100/32 secondary
  ipv6 address ::1/128
 !
-interface Tunnel1
- no switchport
- tunnel mode vxlan
- tunnel source 192.168.100.100
- tunnel destination 192.168.200.200
- multicast
-!
 interface vlan1.1
- no switchport
-!
-interface vlan1.555
  no switchport
 !
 interface xe1
  switchport
  bridge-group 1
  switchport mode trunk
- switchport trunk allowed vlan add 555
+ switchport trunk allowed vlan add 100-104
  speed 1g
 !
 interface xe2
  switchport
  bridge-group 1
+ switchport mode trunk
+ switchport trunk allowed vlan add 100-104
+ speed 1g
 !
 interface xe3
  switchport
@@ -181,8 +173,8 @@ interface xe32
  bridge-group 1
 !
 interface xe33
- no switchport
- ip address 192.168.33.1/24
+ switchport
+ bridge-group 1
 !
 interface xe34
  switchport
@@ -322,7 +314,7 @@ interface xe53/3
 !
 interface xe53/4
  switchport
-bridge-group 1
+ bridge-group 1
 !
 interface xe54/1
  switchport
@@ -340,15 +332,9 @@ interface xe54/4
  switchport
  bridge-group 1
 !
-ip route 192.168.200.200/32 192.168.33.2
-!
 line con 0
  login
 line vty 0 39
  login
-!
-nvo vxlan id 555 ingress-replication inner-vid-disabled
- vxlan map-network tunnel Tunnel1
- vxlan map-access port-vlan xe1 555
 !
 end

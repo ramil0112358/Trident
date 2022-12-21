@@ -140,7 +140,7 @@ class TopologyManager(object):
     #add new node to topology
     def add_topology_node(self, args):
         #prepare args
-        hostname = args['hostname']
+        name = args['name']
         type = args['type']
         topology_name = args['topology']
         # check node type
@@ -152,12 +152,12 @@ class TopologyManager(object):
         topology_check = False
         for topology in self.topology_list:
             if topology.name == topology_name:
-                add_result = topology.add_node(hostname, type)
+                add_result = topology.add_node(name, type)
                 if add_result == 0:
                     logging.info('node already exist')
                     return 0, None
                 else:
-                    logging.info('node ' + str(hostname) + ' successfully created')
+                    logging.info('node ' + str(name) + ' successfully created')
                     return 1, None
         if topology_check == False:
             logging.info('topology not found')
@@ -186,6 +186,7 @@ class TopologyManager(object):
     def init_topology_node(self,
                            node_name,
                            module_manager_instance,
+                           clear_config=True,
                            hostname=None,
                            mgmt_info=None,
                            software_image_path=None,
@@ -204,28 +205,27 @@ class TopologyManager(object):
         Other commands in further parts of test recommended to send via module_send_send_via_sesid() because
         one node have one hostname and several sessions and session id's
         """
-        reboot_flag = False
-        long_reboot_flag = False
 
-        #clear old configuration.Changes takes effect after reboot.
-        module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
-        module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
-        module_manager_instance.module_send_send_via_hostname(node_name, 'y')
-        logging.info('Clear old configuration complete')
-        #device needs about 120 sec to perform standart reboot
-        logging.info('Reloading device...')
-        time.sleep(120)
+        if clear_config == True:
+            #clear old configuration.Changes takes effect after reboot.
+            module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+            logging.info('Clear old configuration complete')
+            #device needs about 120 sec to perform standart reboot
+            logging.info('Reloading device...')
+            time.sleep(120)
 
-        #here device reboots and we are waiting...
+            #here device reboots and we are waiting...
 
-        assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
-        logging.info('Reload device complete')
-        module_manager_instance.module_send_send_via_hostname(node_name, 'admin')
-        assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Password:') == 1
-        module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
-        #switch needs time to complete authentication
-        time.sleep(5)
-        module_manager_instance.module_send_send_via_hostname(node_name, 'enable')
+            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
+            logging.info('Reload device complete')
+            module_manager_instance.module_send_send_via_hostname(node_name, 'admin')
+            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Password:') == 1
+            module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
+            #switch needs time to complete authentication
+            time.sleep(5)
+            module_manager_instance.module_send_send_via_hostname(node_name, 'enable')
 
         if hostname != None:
             module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')

@@ -196,7 +196,7 @@ class Ixia():
                     vlan_instance = ethernet_instance.Vlan.find()
                     vlan_instance.VlanId.Increment(vlanid_first, '1')
             #self.ethernet_list.append(ethernet_instance)
-            logging.info("Ethernet " + str(ethernet_instance) + "successfully created")
+            logging.info("Ethernet " + str(ethernet_instance.Name) + " successfully created")
             return 1
 
     def remove_protocol_ethernet(self,
@@ -210,6 +210,7 @@ class Ixia():
         else:
             target_ethernet = device_group_instance.Ethernet.find(Name=ethernet_name)
             target_ethernet.remove()
+            logging.info("Ethernet " + str(ethernet_name) + " successfully removed")
             return 1
 
     def add_protocol_ipv4(self,
@@ -483,6 +484,15 @@ class Ixia():
             final_statistics[traffic_item_name] = traffic_item_statistics_copy
             traffic_item_statistics.clear()
         return final_statistics
+
+    def remove_traffic_item(self, ti_name) -> bool:
+        traffic_item = None
+        traffic_item = self.ixia_ixnetwork.Traffic.find().TrafficItem.find(Name=ti_name)
+        if traffic_item == None:
+            logging.info("traffic item: " + str(ti_name) + " not found")
+            return False
+        traffic_item.remove()
+        return True
 
     def start_all_protocols(self) -> bool:
         self.ixia_ixnetwork.StartAllProtocols()

@@ -184,19 +184,21 @@ class TopologyManager(object):
             return 0, None
 
     def init_topology_node(self,
-                           node_name,
-                           module_manager_instance,
+                           connection_name,
+                           module_manager,
                            clear_config=True,
                            hostname=None,
                            mgmt_info=None,
                            software_image_path=None,
-                           source_config_filepath=None) -> bool:
+                           source_config_filepath=None,
+                           logout=False) -> bool:
         """
         1.Clear node's old configuration
         2.Set new hostname
         3.Set new management ip and default route. mgmt_info = {ip:"ip",mask:"mask",gateway:"gateway"}
         4.Upgrade node's software
         5.Set new configuration
+        6.Logout
 
         First connection to node going to be via console server.
         It creates first session with first session id in connect_login_sessions_dict dictionary.
@@ -208,9 +210,10 @@ class TopologyManager(object):
 
         if clear_config == True:
             #clear old configuration.Changes takes effect after reboot.
-            module_manager_instance.module_send_send_via_hostname(node_name, 'copy empty-config startup-config')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+            module_manager.send_text_to_node(connection_name, 'copy empty-config startup-config')
+            module_manager.send_text_to_node(connection_name, 'reload')
+            module_manager.send_text_to_node(connection_name, 'y')
+
             logging.info('Clear old configuration complete')
             #device needs about 120 sec to perform standart reboot
             logging.info('Reloading device...')
@@ -218,68 +221,63 @@ class TopologyManager(object):
 
             #here device reboots and we are waiting...
 
-            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
+            assert module_manager.wait_text_from_node(connection_name, 'login:') == 1
             logging.info('Reload device complete')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'admin')
-            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'Password:') == 1
-            module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
+            module_manager.send_text_to_node(connection_name, 'admin')
+            assert module_manager.wait_text_from_node(connection_name, 'Password:') == 1
+            module_manager.send_text_to_node(connection_name, 'bulat')
             #switch needs time to complete authentication
             time.sleep(5)
-            module_manager_instance.module_send_send_via_hostname(node_name, 'enable')
+            module_manager.send_text_to_node(connection_name, 'enable')
 
         if hostname != None:
-            module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'hostname ' + hostname)
-            module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
+            module_manager.send_text_to_node(connection_name, 'conf t')
+            module_manager.send_text_to_node(connection_name, 'hostname ' + hostname)
+            module_manager.send_text_to_node(connection_name, 'exit')
+            module_manager.send_text_to_node(connection_name, 'wr')
+
             #switch needs time to save configuration
             time.sleep(5)
             logging.info('Hostname configuration complete')
 
         #check if new management configuration needed
         if mgmt_info != None:
-            module_manager_instance.module_send_send_via_hostname(node_name, 'conf t')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'int eth0')
-            module_manager_instance.module_send_send_via_hostname(node_name,
-                                                                  'ip address ' +
-                                                                  mgmt_info["ip"] +
-                                                                  '/' + mgmt_info["mask"])
-            module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
-            module_manager_instance.module_send_send_via_hostname(node_name,
-                                                                  'ip route 0.0.0.0 0.0.0.0 ' +
-                                                                  mgmt_info["gateway"])
-            module_manager_instance.module_send_send_via_hostname(node_name, 'exit')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'wr')
+            module_manager.send_text_to_node(connection_name, 'conf t')
+            module_manager.send_text_to_node(connection_name, 'int eth0')
+            module_manager.send_text_to_node(connection_name, 'ip address ' + mgmt_info["ip"] + '/' + mgmt_info["mask"])
+            module_manager.send_text_to_node(connection_name, 'exit')
+            module_manager.send_text_to_node(connection_name, 'ip route 0.0.0.0 0.0.0.0 ' + mgmt_info["gateway"])
+            module_manager.send_text_to_node(connection_name, 'exit')
+            module_manager.send_text_to_node(connection_name, 'wr')
             #switch needs time to save configuration
             time.sleep(5)
             logging.info('Management configuration complete')
 
         #check if software update needed
         if software_image_path != None:
-            module_manager_instance.module_send_send_via_hostname(node_name, 'copy ftp ftp://' +
-                                                                  software_image_path + ' backup')
+            module_manager.send_text_to_node(connection_name, 'copy ftp ftp://' + software_image_path + ' backup')
             #device needs about 120 sec to download new software image
             logging.info('Downloading image from ' + software_image_path + '...')
             time.sleep(120)
-            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, hostname + '#') == 1
+            assert module_manager.wait_text_from_node(connection_name, hostname + '#') == 1
             logging.info('Download complete')
 
-            module_manager_instance.module_send_send_via_hostname(node_name, 'boot backup')
+            module_manager.send_text_to_node(connection_name, 'boot backup')
             #device needs times to offer password
             time.sleep(5)
-            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'admin:') == 1
-            module_manager_instance.module_send_send_via_hostname(node_name, 'bulat')
+            assert module_manager.wait_text_from_node(connection_name, 'admin:') == 1
+            module_manager.send_text_to_node(connection_name, 'bulat')
             #device needs times to apply new software image
             time.sleep(5)
-            module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+            module_manager.send_text_to_node(connection_name, 'reload')
+            module_manager.send_text_to_node(connection_name, 'y')
             #device needs about 200 sec to reload with new software image
             logging.info('Updating device...')
             time.sleep(200)
 
             #here device reboots and we are waiting...
 
-            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
+            assert module_manager.wait_text_from_node(connection_name, 'login:') == 1
             logging.info('Update complete')
 
         #check if new software update needed
@@ -318,23 +316,19 @@ class TopologyManager(object):
             if sftp: sftp.close()
             if transport: transport.close()
 
-            module_manager_instance.module_send_send_via_hostname(node_name, 'reload')
-            module_manager_instance.module_send_send_via_hostname(node_name, 'y')
+            module_manager.send_text_to_node(connection_name, 'reload')
+            module_manager.send_text_to_node(connection_name, 'y')
             # device needs about 120 sec to perform standart reboot
             logging.info('Updateing device config...')
             time.sleep(120)
 
             # here device reboots and we are waiting...
 
-            assert module_manager_instance.module_connect_wait_text_via_hostname(node_name, 'login:') == 1
+            assert module_manager.wait_text_from_node(connection_name, 'login:') == 1
             logging.info('Config update complete')
 
-        sessions_dictionary = module_manager_instance.get_sessions_dict()
-        sesid = list(sessions_dictionary.keys())[0]
-        logout_args = {'connect_id': 'con1',
-                       'session_id': sesid}
-        logging.info('Logout')
-        module_manager_instance.module_connect_logout(logout_args)
+        if logout == True:
+            module_manager.logout_node(connection_name)
 
         return True
 

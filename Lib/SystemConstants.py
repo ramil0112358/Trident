@@ -37,5 +37,8 @@ PORT_C = "1/1"
 software_server_ip = "10.121.0.147"
 
 #dut software image path
-dut_software_image_path = "10.121.0.147/RZN_SWITCHES/distrib/releases-v22.237/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.4-GA2.0-full"
+dut_software_image_path_release = software_server_ip + "/RZN_SWITCHES/distrib/"
+dut_software_image_path_test = software_server_ip + "/RZN_SWITCHES/images/"
 
+#connections_log_path
+connections_log_path = "/home/ramil/PycharmProjects/trident_logs/"

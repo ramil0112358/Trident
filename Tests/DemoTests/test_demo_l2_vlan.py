@@ -1,17 +1,16 @@
 import logging
 import pytest
 from Lib.modules.Ixia import Ixia
-from Lib.SystemConstants import PORT_A, PORT_B
+from Lib.SystemConstants import PORT_A, PORT_B, dut_software_image_path_release
 import time
 
 # -------------------------test setup and teardown functions--------------------
 @pytest.fixture
 def test_demo_l2_vlan_fixture(init_environment_instances):
+    logging.info('Test demo l2 vlan setup')
     core = init_environment_instances
     topology_manager = core.topology_manager
     module_manager = core.module_manager
-    # Setup section
-    logging.info('Test demo l2 vlan setup')
 
     # Create topology
     top_args = {'topology_name': 'topology1'}
@@ -23,35 +22,49 @@ def test_demo_l2_vlan_fixture(init_environment_instances):
                  'topology': 'topology1'}
     topology_manager.add_topology_node(node_args)
 
-    # Create connection module
-    connect_args = {'topology': 'topology1',
+    # Create connection and login to node
+    login_args = {'topology': 'topology1',
                     'name': 'tr1',
                     'ip': '10.27.193.2',
                     'protocol': 'console',
                     'port': '2037',
                     'username': 'admin',
-                    'password': 'bulat'}
-    module_manager.add_module_connect(connect_args)
-    connect_id = module_manager.module_instance_dict['connect']
-    login_args = {'connect_id': connect_id.get_id()}
-    logging.debug('module_instance_dict: ' + str(module_manager.module_instance_dict))
-
-    # Login to node
-    logging.info(connect_id.get_summary())
-    assert module_manager.module_connect_login(login_args) == 1
+                    'password': 'bulat',
+                    'connection_name': 'tr1_console',
+                    'test_name': 'test_demo_l2_vlan'}
+    assert module_manager.login_to_node(login_args) == 1
 
     # Init node
     hostname = "tr1"
     mgmt_info = {"ip": "10.27.192.38", "mask": "24", "gateway": "10.27.192.254"}
-    dut_new_config_path = "/home/ramil/PycharmProjects/trident/Tests/DemoTests/test_demo_l2_vlan_initial_config"
-    topology_manager.init_topology_node('tr1',
+    #dut_software_image_path = dut_software_image_path_release + \
+    #                          'releases-v22.237/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.4-GA2.0-full'
+    dut_software_image_path = dut_software_image_path_release + \
+                              'releases-v22.160/bulat-bs7510-48x6q/bulat-bs7510-48x6q_7.1.1.0.2.0.2-GA2.0-full'
+
+    dut_new_config_path = \
+        "/home/ramil/PycharmProjects/trident/Tests/DemoTests/Configs/test_demo_l2_vlan/test_demo_l2_vlan_initial_config"
+
+    '''
+    topology_manager.init_topology_node('tr1_console',
                                         module_manager,
-                                        False,
+                                        False,#<-clear config
                                         None,#hostname,
                                         None,#mgmt_info,
                                         None,#dut_software_image_path,
-                                        None)#dut_new_config_path)
+                                        None,#dut_new_config_path)
+                                        False)#<-logout session
+    '''
+    topology_manager.init_topology_node('tr1_console',
+                                 module_manager,
+                                 False,#True,  # <-clear config
+                                 None,#hostname,
+                                 mgmt_info,
+                                 None,#dut_software_image_path,
+                                 dut_new_config_path,
+                                 True)  # <-logout session
 
+    '''
     # Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")
     core.ixia = ixia_instance
@@ -105,20 +118,34 @@ def test_demo_l2_vlan_fixture(init_environment_instances):
         "bidir": 0,
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("ethernetTrafficItem", "ethernetVlan", traffic_item1_data) == 1
+    '''
+
+
 
     yield
 
+    '''
     # Teardown
     ixia_instance.stop_all_protocols()
     # Logout
     logout_args = {'connect_id': connect_id.get_id(), 'session_id': 'ses1:tr1:console:10.27.193.2:2037'}
     logout_res = module_manager.module_connect_logout(logout_args)
-    logging.info('logout_res: ' + str(logout_res))
+    sessions_dictionary = module_manager.get_sessions_dict()
+    sesid = list(sessions_dictionary.keys())[0]
+    logout_args = {'connect_id': 'con1',
+                   'session_id': sesid}
+    '''
+
+
+
     logging.info('Test demo l2 vlan teardown complete')
 
     # ------------------------test functions--------------------------
 
 def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
+    logging.info("main function launch")
+
+    '''
     core = init_environment_instances
     ixia_instance = core.ixia
     module_manager = core.module_manager
@@ -132,27 +159,56 @@ def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
     flow_statistics = ixia_instance.get_traffic_items_stat()
     packet_loss = flow_statistics["ethernetTrafficItem"]["Loss %"]
     logging.info("Traffic_items packet_loss: " + str(packet_loss))
-    assert float(packet_loss) == 0.000
+    #assert float(packet_loss) == 0.000
 
-    #remove vlan tag ethernet protocols and set ethernet protocol w/o vlan tagging
+    #remove ethernet protocols with vlan tag and set ethernet protocol w/o vlan tagging
     ixia_instance.remove_protocol_ethernet("Topology1", "DeviceGroupA", "Ethernet 1")
     ixia_instance.remove_protocol_ethernet("Topology2", "DeviceGroupB", "Ethernet 2")
 
-    assert ixia_instance.add_protocol_ethernet("Topology1","DeviceGroupA") == 1
-    assert ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB") == 1
+    ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA")
+    ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB")
 
     # Get session id
     sesdict = module_manager.connect_login_sessions_dict.items()
     logging.info('session_dict: ' + str(sesdict))
-
+   
     # Send command via session id
-    sesid = 'ses1:tr1:console:10.27.193.2:2037'
-    module_manager.send_command_via_sesid(sesid, 'conf t')
+    sesid = list(sesdict.keys())[0]
+    logging.info('session_id: ' + str(sesid))
+    assert module_manager.send_command_via_sesid(sesid, 'conf t') == 1
     module_manager.send_command_via_sesid(sesid, 'int xe1-2')
     module_manager.send_command_via_sesid(sesid, 'switchport mode access')
-    module_manager.send_command_via_sesid(sesid, 'swithport access vlan 100')
+    module_manager.send_command_via_sesid(sesid, 'switchport access vlan 100')
     module_manager.send_command_via_sesid(sesid, 'exit')
     module_manager.send_command_via_sesid(sesid, 'wr')
+
+    #remove old traffic item and set new for new ethernet protcols
+    ixia_instance.remove_traffic_item("ethernetTrafficItem")
+
+    traffic_item2_data = {
+        "source_device_group_name": "DeviceGroupA",
+        "dest_device_group_name": "DeviceGroupB",
+        "framerate_type": "framesPerSecond",
+        "framerate_value": "100",
+        "frame_size": "1400",
+        "bidir": 0,
+        "control_type": "continuous"}
+    assert ixia_instance.add_traffic_item("ethernetTrafficItem2", "ethernetVlan", traffic_item2_data) == 1
+
+    # Launch traffic item for 30 seconds
+    assert ixia_instance.apply_and_start_traffic_items() == 1
+    time.sleep(30)
+    assert ixia_instance.stop_traffic_items() == 1
+
+    # Check traffic item statistic, packet loss.
+    flow_statistics = ixia_instance.get_traffic_items_stat()
+    packet_loss = flow_statistics["ethernetTrafficItem2"]["Loss %"]
+    logging.info("Traffic_items packet_loss: " + str(packet_loss))
+    assert float(packet_loss) == 0.000
+    '''
+
+
+
 
 
 

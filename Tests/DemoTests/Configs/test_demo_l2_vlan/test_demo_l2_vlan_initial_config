@@ -83,6 +83,7 @@ interface xe9
 interface xe10
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe11
  switchport
@@ -123,214 +124,267 @@ interface xe19
 interface xe20
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe21
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe22
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe23
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe24
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe25
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe26
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe27
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe28
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe29
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe30
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe31
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe32
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe33
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe34
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe35
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe36
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe37
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe38
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe39
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe40
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe41
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe42
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe43
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe44
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe45
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe46
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe47
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe48
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe49/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe49/2
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe49/3
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe49/4
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe50/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe50/2
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe50/3
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe50/4
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe51/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe51/2
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe51/3
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe51/4
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe52/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe52/2
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe52/3
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe52/4
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe53/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe53/2
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe53/3
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe53/4
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe54/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe54/2
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe54/3
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe54/4
  switchport
  bridge-group 1
+
 !
 line con 0
  login

@@ -55,7 +55,9 @@ class ModuleManager():
         topology_list = self.topology_manager_instance.get_topology_list()
         for topology in topology_list:
             if topology.get_name() == topology_name:
+                logging.info("Current node list: " + str(topology.get_nodelist()))
                 for node in topology.get_nodelist():
+                    #logging.info("Is node.name " + node.name + ' equal to name ' + name + ' ?')
                     if node.name == name:
                         new_connection = Connection(node,
                                                     ip,
@@ -69,6 +71,9 @@ class ModuleManager():
                         if new_connection.login() == True:
                             logging.info('Connection ' + connection_name + ' successfully established')
                             return True
+                        else:
+                            logging.info('Connection ' + connection_name + ' failed')
+                            return False
                 logging.info('Node ' + str(name) + ' not found')
                 return False
         logging.info('Topology ' + str(topology_name) + ' not found')

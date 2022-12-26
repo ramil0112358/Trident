@@ -56,15 +56,16 @@ def test_demo_l2_vlan_fixture(init_environment_instances):
                                         False)#<-logout session
     '''
     topology_manager.init_topology_node('tr1_console',
-                                 module_manager,
-                                 False,#True,  # <-clear config
-                                 None,#hostname,
-                                 mgmt_info,
-                                 None,#dut_software_image_path,
-                                 dut_new_config_path,
-                                 True)  # <-logout session
+                                        module_manager,
+                                        True,  # <-clear config
+                                        hostname,
+                                        mgmt_info,
+                                        dut_software_image_path,
+                                        dut_new_config_path,
+                                        True)  # <-logout session
 
-    '''
+
+
     # Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")
     core.ixia = ixia_instance
@@ -118,38 +119,29 @@ def test_demo_l2_vlan_fixture(init_environment_instances):
         "bidir": 0,
         "control_type": "continuous"}
     assert ixia_instance.add_traffic_item("ethernetTrafficItem", "ethernetVlan", traffic_item1_data) == 1
-    '''
-
+    logging.info('Test demo l2 vlan setup complete')
 
 
     yield
 
-    '''
-    # Teardown
+    logging.info('Test demo l2 vlan teardown')
+
     ixia_instance.stop_all_protocols()
-    # Logout
-    logout_args = {'connect_id': connect_id.get_id(), 'session_id': 'ses1:tr1:console:10.27.193.2:2037'}
-    logout_res = module_manager.module_connect_logout(logout_args)
-    sessions_dictionary = module_manager.get_sessions_dict()
-    sesid = list(sessions_dictionary.keys())[0]
-    logout_args = {'connect_id': 'con1',
-                   'session_id': sesid}
-    '''
 
-
-
+    module_manager.logout_node('tr1_telnet')
     logging.info('Test demo l2 vlan teardown complete')
+
 
     # ------------------------test functions--------------------------
 
 def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
-    logging.info("main function launch")
+    logging.info("Main function launch")
 
-    '''
     core = init_environment_instances
     ixia_instance = core.ixia
     module_manager = core.module_manager
 
+    # PartII.Check taged traffic pass through dut
     # Launch traffic item for 30 seconds
     assert ixia_instance.apply_and_start_traffic_items() == 1
     time.sleep(30)
@@ -159,8 +151,10 @@ def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
     flow_statistics = ixia_instance.get_traffic_items_stat()
     packet_loss = flow_statistics["ethernetTrafficItem"]["Loss %"]
     logging.info("Traffic_items packet_loss: " + str(packet_loss))
-    #assert float(packet_loss) == 0.000
+    assert float(packet_loss) == 0.000
 
+
+    #PartII.Check untag traffic pass through dut
     #remove ethernet protocols with vlan tag and set ethernet protocol w/o vlan tagging
     ixia_instance.remove_protocol_ethernet("Topology1", "DeviceGroupA", "Ethernet 1")
     ixia_instance.remove_protocol_ethernet("Topology2", "DeviceGroupB", "Ethernet 2")
@@ -168,22 +162,36 @@ def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
     ixia_instance.add_protocol_ethernet("Topology1", "DeviceGroupA")
     ixia_instance.add_protocol_ethernet("Topology2", "DeviceGroupB")
 
-    # Get session id
-    sesdict = module_manager.connect_login_sessions_dict.items()
-    logging.info('session_dict: ' + str(sesdict))
-   
-    # Send command via session id
-    sesid = list(sesdict.keys())[0]
-    logging.info('session_id: ' + str(sesid))
-    assert module_manager.send_command_via_sesid(sesid, 'conf t') == 1
-    module_manager.send_command_via_sesid(sesid, 'int xe1-2')
-    module_manager.send_command_via_sesid(sesid, 'switchport mode access')
-    module_manager.send_command_via_sesid(sesid, 'switchport access vlan 100')
-    module_manager.send_command_via_sesid(sesid, 'exit')
-    module_manager.send_command_via_sesid(sesid, 'wr')
+    login_args = {'topology': 'topology1',
+                  'name': 'tr1',
+                  'ip': '10.27.192.38',
+                  'protocol': 'telnet',
+                  'port': '23',
+                  'username': 'admin',
+                  'password': 'bulat',
+                  'connection_name': 'tr1_telnet',
+                  'test_name': 'test_demo_l2_vlan'}
+    assert module_manager.login_to_node(login_args) == 1
 
-    #remove old traffic item and set new for new ethernet protcols
-    ixia_instance.remove_traffic_item("ethernetTrafficItem")
+    #change config for untag traffic
+    module_manager.send_text_to_node('tr1_telnet', 'int xe1-2')
+    module_manager.send_text_to_node('tr1_telnet', 'switchport mode access')
+    module_manager.send_text_to_node('tr1_telnet', 'switchport access vlan 100')
+    module_manager.send_text_to_node('tr1_telnet', 'exit')
+    module_manager.send_text_to_node('tr1_telnet', 'wr')
+
+
+    '''
+    I cant delete traffic item i used before, create new one and apply changes.Ixia report error:
+    ixnetwork_restpy.errors.BadRequestError:  Args do not match signature
+../../venv/lib/python3.7/site-packages/ixnetwork_restpy/connection.py:461: BadRequestError
+
+    I can only make old traffic item inactive -> disable it
+    '''
+
+
+    #ixia_instance.remove_traffic_item("ethernetTrafficItem")<--dosent work
+    ixia_instance.disable_traffic_item("ethernetTrafficItem")
 
     traffic_item2_data = {
         "source_device_group_name": "DeviceGroupA",
@@ -205,7 +213,8 @@ def test_demo_l2_vlan(init_environment_instances, test_demo_l2_vlan_fixture):
     packet_loss = flow_statistics["ethernetTrafficItem2"]["Loss %"]
     logging.info("Traffic_items packet_loss: " + str(packet_loss))
     assert float(packet_loss) == 0.000
-    '''
+
+
 
 
 

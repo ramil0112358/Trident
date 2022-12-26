@@ -254,7 +254,9 @@ class Ixia():
                 ipv4_instance.GatewayIp.Single(ip_gateway)
                 ipv4_instance.Prefix.Single(ip_prefix)
                 ipv4_instance.ResolveGateway.Single(resolve_gateway)
+            logging.info("IPv4 " + str(ipv4_instance.Name) + " successfully added")
             return 1
+
         return 0
 
     def remove_protocol_ipv4(self,
@@ -268,6 +270,7 @@ class Ixia():
         else:
             target_ipv4 = device_group_instance.Ethernet.find(Name=ipv4_name)
             target_ipv4.remove()
+            logging.info("IPv4 " + str(ipv4_name) + " successfully removed")
             return 1
 
     def add_traffic_item(self, ti_name, ti_type, ti_data) -> bool:

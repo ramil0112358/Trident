@@ -28,7 +28,7 @@ ip pim register-rp-reachability
 !
 interface eth0
  no switchport
- ip address 10.0.0.1/24
+ ip address 10.27.192.38/24
 !
 interface lo
  no switchport
@@ -384,7 +384,8 @@ interface xe54/3
 interface xe54/4
  switchport
  bridge-group 1
-
+!
+ip route 0.0.0.0/0 10.27.192.254
 !
 line con 0
  login

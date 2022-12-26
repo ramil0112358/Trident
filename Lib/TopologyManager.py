@@ -183,6 +183,16 @@ class TopologyManager(object):
             logging.info('topology not found')
             return 0, None
 
+    def authenticate_node(self, module_manager, connection_name):
+        assert module_manager.wait_text_from_node(connection_name, 'login:') == 1
+        module_manager.send_text_to_node(connection_name, 'admin')
+        assert module_manager.wait_text_from_node(connection_name, 'Password:') == 1
+        module_manager.send_text_to_node(connection_name, 'bulat')
+        # switch needs time to complete authentication
+        time.sleep(5)
+        module_manager.send_text_to_node(connection_name, 'enable')
+
+
     def init_topology_node(self,
                            connection_name,
                            module_manager,
@@ -221,14 +231,8 @@ class TopologyManager(object):
 
             #here device reboots and we are waiting...
 
-            assert module_manager.wait_text_from_node(connection_name, 'login:') == 1
+            self.authenticate_node(module_manager, connection_name)
             logging.info('Reload device complete')
-            module_manager.send_text_to_node(connection_name, 'admin')
-            assert module_manager.wait_text_from_node(connection_name, 'Password:') == 1
-            module_manager.send_text_to_node(connection_name, 'bulat')
-            #switch needs time to complete authentication
-            time.sleep(5)
-            module_manager.send_text_to_node(connection_name, 'enable')
 
         if hostname != None:
             module_manager.send_text_to_node(connection_name, 'conf t')
@@ -277,7 +281,7 @@ class TopologyManager(object):
 
             #here device reboots and we are waiting...
 
-            assert module_manager.wait_text_from_node(connection_name, 'login:') == 1
+            self.authenticate_node(module_manager, connection_name)
             logging.info('Update complete')
 
         #check if new software update needed
@@ -324,7 +328,7 @@ class TopologyManager(object):
 
             # here device reboots and we are waiting...
 
-            assert module_manager.wait_text_from_node(connection_name, 'login:') == 1
+            self.authenticate_node(module_manager, connection_name)
             logging.info('Config update complete')
 
         if logout == True:

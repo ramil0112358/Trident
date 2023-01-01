@@ -163,6 +163,23 @@ class TopologyManager(object):
             logging.info('topology not found')
             return 0, None
 
+    def get_node_type(self, topology_name, topology_node_name):
+        target_topology = False
+        for topology in self.topology_list:
+            if topology.name == topology_name:
+                target_topology = topology
+                break
+        if target_topology == False:
+            logging.info('Topology + ' + topology_name + ' not found')
+            return 0
+        target_node = False
+        for node in target_topology.nodelist:
+            if node.get_name() == topology_node_name:
+                return node.get_type()
+        if target_node == False:
+            logging.info('Node + ' + topology_node_name + ' not found')
+            return 0
+
     #remove node from topology
     def remove_topology_node(self, args):
         #prepare args
@@ -191,7 +208,6 @@ class TopologyManager(object):
         # switch needs time to complete authentication
         time.sleep(5)
         module_manager.send_text_to_node(connection_name, 'enable')
-
 
     def init_topology_node(self,
                            connection_name,

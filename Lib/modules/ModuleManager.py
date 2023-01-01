@@ -68,12 +68,21 @@ class ModuleManager():
                                                     connection_name,
                                                     test_name)
                         self.connections[connection_name] = new_connection
-                        if new_connection.login() == True:
-                            logging.info('Connection ' + connection_name + ' successfully established')
-                            return True
-                        else:
-                            logging.info('Connection ' + connection_name + ' failed')
-                            return False
+                        node_type = self.topology_manager_instance.get_node_type(topology_name, name)
+                        if node_type == '751048x6q':
+                            if new_connection.login() == True:
+                                logging.info('Connection ' + connection_name + ' successfully established')
+                                return True
+                            else:
+                                logging.info('Connection ' + connection_name + ' failed')
+                                return False
+                        if node_type == '2540-48g':
+                            if new_connection.login_aruba() == True:
+                                logging.info('Connection ' + connection_name + ' successfully established')
+                                return True
+                            else:
+                                logging.info('Connection ' + connection_name + ' failed')
+                                return False
                 logging.info('Node ' + str(name) + ' not found')
                 return False
         logging.info('Topology ' + str(topology_name) + ' not found')

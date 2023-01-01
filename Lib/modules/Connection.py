@@ -42,7 +42,6 @@ class Connection():
                str(self.password)
 
     def login(self):
-        #pdb.set_trace()
         result = False
         #get node type specific attributes from json library
         device_attr_json = devices_attr_conf_file_path + str(self.node.get_type()) + '.json'
@@ -171,7 +170,91 @@ class Connection():
     def logout(self):
         if self.session.isalive():
             self.session.sendline('exit')
+            time.sleep(5)
+            #==part for aruba switches==
+            self.session.sendline('exit')
+            time.sleep(5)
+            self.session.sendline('exit')
+            time.sleep(5)
+            self.session.sendline('y')
+            #===========================
             self.session.close()
             return True
         self.session.kill(signal.SIGKILL)
         return True
+
+    def login_aruba(self):
+        result = False
+        if self.protocol == 'telnet' or self.protocol == 'console':
+            try:
+                credentials = 'telnet ' + str(self.ip) + ' ' + str(self.port)
+                self.session = pexpect.spawn(credentials, timeout=30)
+                # telnet connection over console server
+                if self.protocol == 'console':
+                    # if remote device refuses connection session process terminates immediately
+                    # check session process existence
+                    if psutil.pid_exists(self.session.pid) == False:
+                        logging.info('Device {host} connection refused.'.format(host=str(self.ip)))
+                        return False
+                    # connection to device console port via telnet through console server
+                    # "double enter" invintation
+                    self.session.sendline('\r\n')
+                    time.sleep(5)
+                    self.session.sendline('\r\n')
+                    time.sleep(15)
+                    # "press any key to continue" invintation
+                    self.session.sendline('\r\n')
+                    time.sleep(15)
+                    self.session.sendline('enable')
+                    self.session.expect('#')
+                    logging.info(f'Already connected to console server '
+                                 f'{str(self.ip)} via telnet port {str(self.port)}')
+                    self.start_session_log(self.session,
+                                           self.connection_name,
+                                           self.test_name)
+                    return True
+            except pexpect.TIMEOUT:
+                logging.info('Connection to the device {} timed out'.format(str(self.ip)))
+                logging.debug(self.session.before)
+                return result
+            except pexpect.EOF:
+                logging.info(('Connection to the device {} received unexpected output').format(str(self.ip)))
+                logging.debug(self.session.before)
+                return result
+
+        elif self.protocol == 'ssh':
+            try:
+                credentials = 'ssh ' + self.username + '@' + str(self.ip)
+                # If ssh keys is not found, they will be added automatically
+                self.session = pexpect.spawn(credentials, timeout=30)
+                time.sleep(5)
+                self.session.expect('password:')
+                self.session.sendline(self.password)
+                self.session.sendline('enable')
+                logging.debug(f'Successfully connected to {str(self.ip)} via ssh port {str(self.port)}')
+                self.start_session_log(self.session,
+                                       self.connection_name,
+                                       self.test_name)
+                return True
+            except pexpect.TIMEOUT:
+                logging.info(
+                    'Connection to the device {} timed out'.format(str(self.ip)))
+                logging.debug(self.session.before.decode('utf-8').strip())
+                return result
+            except pexpect.EOF:
+                logging.info((
+                    'Connection to the device {} received unexpected output')
+                    .format(str(self.ip)))
+                logging.debug(self.session.before.decode('utf-8').strip())
+                return result
+
+    def logout_aruba(self):
+        if self.session.isalive():
+            self.session.sendline('reload')
+            time.sleep(5)
+            self.session.sendline('y')
+            self.session.close()
+            return True
+        self.session.kill(signal.SIGKILL)
+        return True
+

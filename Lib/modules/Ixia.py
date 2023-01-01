@@ -166,6 +166,12 @@ class Ixia():
 
         return device_group_instance
 
+    def update_device_group(self,
+                            device_group_topology_name,
+                            device_group_name):
+        self.get_device_group_instance_by_name(device_group_topology_name,
+                                               device_group_name).update()
+
     def add_protocol_ethernet(self,
                     device_group_topology_name,
                     device_group_name,
@@ -255,6 +261,7 @@ class Ixia():
                 ipv4_instance.Prefix.Single(ip_prefix)
                 ipv4_instance.ResolveGateway.Single(resolve_gateway)
             logging.info("IPv4 " + str(ipv4_instance.Name) + " successfully added")
+            #logging.info("IPv4: " + str(ipv4_instance))
             return 1
 
         return 0
@@ -268,10 +275,23 @@ class Ixia():
         if device_group_instance == None:
             return 0
         else:
-            target_ipv4 = device_group_instance.Ethernet.find(Name=ipv4_name)
+            target_ipv4 = device_group_instance.Ethernet.find().IPv4.find(Name=ipv4_name)
             target_ipv4.remove()
             logging.info("IPv4 " + str(ipv4_name) + " successfully removed")
             return 1
+
+    def get_ipv4_resolve_gateway_info(self,
+                                      device_group_topology_name,
+                                      device_group_name,
+                                      ipv4_name) -> bool:
+        device_group_instance = self.get_device_group_instance_by_name(device_group_topology_name, device_group_name)
+        if device_group_instance == None:
+            return 0
+        else:
+            target_ipv4 = device_group_instance.Ethernet.find().IPv4.find(Name=ipv4_name)
+            logging.info('Target ipv4: ' + str(target_ipv4))
+            #resolve_gateway = target_ipv4.Ipv4.find().ResolveGateway
+            #logging.info('Resolve gateway info: ' + str(resolve_gateway.info))
 
     def add_traffic_item(self, ti_name, ti_type, ti_data) -> bool:
 

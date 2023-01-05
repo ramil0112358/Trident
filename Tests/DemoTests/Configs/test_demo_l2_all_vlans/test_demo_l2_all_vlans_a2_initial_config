@@ -1,0 +1,14 @@
+
+Running configuration:
+
+; JL355A Configuration Editor; Created on release #YC.16.05.0007
+; Ver #12:08.04.99.03.b3.b8.ef.74.61.fc.68.f3.8c.fc.e3.ff.37.2f:66
+
+hostname "a2_config_download"
+module 1 type jl355a
+snmp-server community "public" unrestricted
+vlan 1
+   name "DEFAULT_VLAN"
+   untagged 1-52
+   ip address dhcp-bootp
+   exit

@@ -47,8 +47,14 @@ def test_demo_l2_all_vlans_fixture(init_environment_instances):
                   'test_name': 'test_demo_l2_all_vlans'}
     assert module_manager.login_to_node(login_args) == 1
 
-    module_manager.send_text_to_node('a2_console', 'conf t')
-    module_manager.send_text_to_node('a2_console', 'hostname a2')
+    source_config_filepath = \
+        '/home/ramil/PycharmProjects/trident/Tests/DemoTests/Configs/test_demo_l2_all_vlans/test_demo_l2_all_vlans_a2_initial_config'
+    topology_manager.init_topology_node_aruba('a2_console',
+                                              module_manager,
+                                              True,#clear_config
+                                              None,#set_hostname
+                                              source_config_filepath,
+                                              True)#logout_session
 
     yield
 

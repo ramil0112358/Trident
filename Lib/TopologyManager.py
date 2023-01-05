@@ -1,10 +1,12 @@
-from Lib.Topology import Topology
-from Lib.Link import Link
-from Lib.SystemConstants import MAX_TOPS, devices_attr_conf_file_path, logging_type
 import os.path
 import logging
 import time
 import paramiko
+import tftpy
+from Lib.Topology import Topology
+from Lib.SystemConstants import MAX_TOPS, \
+                                devices_attr_conf_file_path, \
+                                test_system_server_ip
 
 class TopologyManager(object):
     '''
@@ -300,7 +302,7 @@ class TopologyManager(object):
             self.authenticate_node(module_manager, connection_name)
             logging.info('Update complete')
 
-        #check if new software update needed
+        #check if config update needed
         if source_config_filepath != None:
             #connect to device via sftp with paramiko
             #open a transport
@@ -352,6 +354,77 @@ class TopologyManager(object):
 
         return True
 
+    def authenticate_node_aruba(self, module_manager, connection_name):
+        # "double enter" invintation
+        module_manager.send_text_to_node(connection_name, '\r\n')
+        time.sleep(5)
+        module_manager.send_text_to_node(connection_name, '\r\n')
+        time.sleep(15)
+        # "press any key to continue" invintation
+        module_manager.send_text_to_node(connection_name, '\r\n')
+        time.sleep(15)
+        module_manager.send_text_to_node(connection_name, 'enable')
+        assert module_manager.wait_text_from_node(connection_name, '#') == 1
+
+    def init_topology_node_aruba(self,
+                                 connection_name,
+                                 module_manager,
+                                 clear_config=True,
+                                 hostname=None,
+                                 source_config_filepath=None,
+                                 logout=False) -> bool:
+
+
+        if clear_config == True:
+            # clear old configuration.Changes takes effect after reboot.
+            module_manager.send_text_to_node(connection_name, 'erase startup-config')
+            module_manager.send_text_to_node(connection_name, 'y')
+
+            logging.info('Clear old configuration complete')
+            # device needs about 50 sec to perform standart reboot
+            logging.info('Reloading device...')
+            time.sleep(50)
+
+            # here device reboots and we are waiting...
+
+            self.authenticate_node_aruba(module_manager, connection_name)
+            logging.info('Reload device complete')
+
+        if hostname != None:
+            module_manager.send_text_to_node(connection_name, 'conf t')
+            module_manager.send_text_to_node(connection_name, 'hostname ' + hostname)
+            module_manager.send_text_to_node(connection_name, 'exit')
+            module_manager.send_text_to_node(connection_name, 'write memory')
+
+            #switch needs time to save configuration
+            time.sleep(5)
+            logging.info('Hostname configuration complete')
+
+        # check if config update needed
+        if source_config_filepath != None:
+            filepath_list = source_config_filepath.split('/')
+            filename = filepath_list[-1]
+            del filepath_list[-1]
+            filepath = '/'.join(filepath_list)
+            logging.info('Tftp server work directory: ' + filepath)
+
+            server = tftpy.TftpServer(filepath)
+            server.listen('10.27.152.7', 69)
+
+            module_manager.send_text_to_node(connection_name,
+                                             'copy tftp startup-config ' + test_system_server_ip + ' ' + filename)
+            time.sleep(5)
+            module_manager.send_text_to_node(connection_name, 'y')
+
+        if logout == True:
+            module_manager.logout_node(connection_name)
+
+        return True
+
+
+
+
+    '''
     #add link to topology
     def add_topology_link(self, args):
         #prepare args
@@ -394,5 +467,6 @@ class TopologyManager(object):
         if topology_check == False:
             logging.info('topology not found')
             return 0, None
+    '''
 
 

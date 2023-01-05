@@ -247,7 +247,7 @@ class Connection():
                     .format(str(self.ip)))
                 logging.debug(self.session.before.decode('utf-8').strip())
                 return result
-
+    '''
     def logout_aruba(self):
         if self.session.isalive():
             self.session.sendline('reload')
@@ -257,4 +257,5 @@ class Connection():
             return True
         self.session.kill(signal.SIGKILL)
         return True
+    '''
 

@@ -42,3 +42,5 @@ dut_software_image_path_test = software_server_ip + "/RZN_SWITCHES/images/"
 
 #connections_log_path
 connections_log_path = "/home/ramil/PycharmProjects/trident_logs/"
+
+test_system_server_ip = "10.27.152.7"

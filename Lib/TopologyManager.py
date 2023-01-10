@@ -2,11 +2,11 @@ import os.path
 import logging
 import time
 import paramiko
-import tftpy
+import subprocess
 from Lib.Topology import Topology
 from Lib.SystemConstants import MAX_TOPS, \
                                 devices_attr_conf_file_path, \
-                                test_system_server_ip
+                                autotest_system_server_ip
 
 class TopologyManager(object):
     '''
@@ -402,19 +402,52 @@ class TopologyManager(object):
 
         # check if config update needed
         if source_config_filepath != None:
-            filepath_list = source_config_filepath.split('/')
-            filename = filepath_list[-1]
-            del filepath_list[-1]
-            filepath = '/'.join(filepath_list)
-            logging.info('Tftp server work directory: ' + filepath)
+            '''
+            Tftp server "tftpy" have two disadvantages
+            -server.listen method makes infinite loop which blocks further python script execution
+            -socket bind with port number < 1024 requres root user level
+            so standart tftp application for linux will be used.
+            '''
+            #server = tftpy.TftpServer(filepath)
+            #server.listen('0.0.0.0', 69)
+            '''
+            installation: sudo apt install tftpd-hpa
+            configuration: sudo nano /etc/default/tftpd-hpa
+            launch: systemctl restart tftpd-hpa
+            
+            # /etc/default/tftpd-hpa
 
-            server = tftpy.TftpServer(filepath)
-            server.listen('10.27.152.7', 69)
+            TFTP_USERNAME="tftp"
+            TFTP_DIRECTORY="/home/ramil/PycharmProjects/trident/Tests/"
+            TFTP_ADDRESS="10.27.152.7:69"
+            TFTP_OPTIONS="--secure"
+            '''
 
-            module_manager.send_text_to_node(connection_name,
-                                             'copy tftp startup-config ' + test_system_server_ip + ' ' + filename)
+            #tftp server running check
+            '''
+            out = subprocess.call("systemctl | grep tftpd-hpa.service")
+            output = out.read()
+            logging.info("output: " + output)
+            '''
+
+            #cofnigure management ip address
+            module_manager.send_text_to_node(connection_name, 'conf t')
+            module_manager.send_text_to_node(connection_name, 'int vlan 1')
+            module_manager.send_text_to_node(connection_name, 'ip address 10.27.192.38/24')
+            module_manager.send_text_to_node(connection_name, 'exit')
+            module_manager.send_text_to_node(connection_name, 'ip route ' + autotest_system_server_ip + '/32 ' + '10.27.192.254')
+            module_manager.send_text_to_node(connection_name, 'exit')
+
+            module_manager.send_text_to_node(connection_name,'copy tftp startup-config ' +
+                                             autotest_system_server_ip + ' ' + source_config_filepath)
             time.sleep(5)
             module_manager.send_text_to_node(connection_name, 'y')
+            logging.info('Updateing device config...')
+            time.sleep(50)
+
+            # here device reboots and we are waiting...
+
+            logging.info('Config update complete')
 
         if logout == True:
             module_manager.logout_node(connection_name)

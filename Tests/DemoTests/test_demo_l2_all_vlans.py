@@ -46,9 +46,11 @@ def test_demo_l2_all_vlans_fixture(init_environment_instances):
                   'connection_name': 'a2_console',
                   'test_name': 'test_demo_l2_all_vlans'}
     assert module_manager.login_to_node(login_args) == 1
-
-    source_config_filepath = \
-        '/home/ramil/PycharmProjects/trident/Tests/DemoTests/Configs/test_demo_l2_all_vlans/test_demo_l2_all_vlans_a2_initial_config'
+    '''
+    No need to set full path to aruba config file because rest of the path 
+    configured in tftp-server configuration.Details in TopologyManager.py file
+    '''
+    source_config_filepath = 'DemoTests/Configs/test_demo_l2_all_vlans/a2_initial_config'
     topology_manager.init_topology_node_aruba('a2_console',
                                               module_manager,
                                               True,#clear_config

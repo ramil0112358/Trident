@@ -103,14 +103,14 @@ def test_demo_l2_vlan_fixture(init_environment_instances):
     assert ixia_instance.add_protocol_ethernet("Topology1",
                                                "DeviceGroupA",
                                                True, #<- enable vlan tagging
-                                               1,    #<- amount of vlan tags should be equal to amount of hosts
+                                               1,    #<- amount of vlan tags
                                                vlan_start_value) == 1
 
     vlan_start_value = "100"
     assert ixia_instance.add_protocol_ethernet("Topology2",
                                                "DeviceGroupB",
                                                True, #<- enable vlan tagging
-                                               1,    #<- amount of vlan tags should be equal to amount of hosts
+                                               1,    #<- amount of vlan tags
                                                vlan_start_value) == 1
 
     # Start protocols

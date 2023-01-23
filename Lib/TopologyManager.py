@@ -438,6 +438,7 @@ class TopologyManager(object):
             module_manager.send_text_to_node(connection_name, 'ip route ' + autotest_system_server_ip + '/32 ' + '10.27.192.254')
             module_manager.send_text_to_node(connection_name, 'exit')
 
+
             module_manager.send_text_to_node(connection_name,'copy tftp startup-config ' +
                                              autotest_system_server_ip + ' ' + source_config_filepath)
             time.sleep(5)

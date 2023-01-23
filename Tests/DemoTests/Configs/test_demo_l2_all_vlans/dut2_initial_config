@@ -1,11 +1,10 @@
 !
 service password-encryption
 !
-hostname test_config
+hostname dut2
 !
 logging console 7
 logging monitor 7
-banner modt ###autotest###
 !
 no ip domain-lookup
 bridge 1 protocol mstp
@@ -20,22 +19,30 @@ username admin role network-admin password encrypted $6$bJoWhcc.$yPo6TVs6ArCmo3M
 ethernet cfm enable
 sFlow disable
 !
+vlan database
+ vlan 3764-4018 bridge 1 state enable
+!
 spanning-tree mst configuration
 !
 ip pim register-rp-reachability
 !
 interface eth0
  no switchport
- ip address 10.27.192.40/24
+ ip address 10.27.192.39/24
 !
 interface lo
  no switchport
  ip address 127.0.0.1/8
  ipv6 address ::1/128
 !
+interface vlan1.1
+ no switchport
+!
 interface xe1
  switchport
  bridge-group 1
+ switchport mode trunk
+ switchport trunk allowed vlan add 3764-4018
 !
 interface xe2
  switchport
@@ -72,6 +79,7 @@ interface xe9
 interface xe10
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe11
  switchport
@@ -112,122 +120,153 @@ interface xe19
 interface xe20
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe21
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe22
  switchport
  bridge-group 1
+ switchport mode trunk
+ switchport trunk allowed vlan add 3764-4018
 !
 interface xe23
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe24
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe25
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe26
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe27
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe28
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe29
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe30
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe31
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe32
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe33
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe34
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe35
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe36
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe37
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe38
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe39
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe40
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe41
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe42
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe43
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe44
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe45
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe46
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe47
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe48
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe49/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe49/2
  switchport
@@ -244,6 +283,7 @@ interface xe49/4
 interface xe50/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe50/2
  switchport
@@ -260,6 +300,7 @@ interface xe50/4
 interface xe51/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe51/2
  switchport
@@ -276,6 +317,7 @@ interface xe51/4
 interface xe52/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe52/2
  switchport
@@ -292,6 +334,7 @@ interface xe52/4
 interface xe53/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe53/2
  switchport
@@ -308,6 +351,7 @@ interface xe53/4
 interface xe54/1
  switchport
  bridge-group 1
+ shutdown
 !
 interface xe54/2
  switchport
@@ -329,4 +373,3 @@ line vty 0 39
  login
 !
 end
-

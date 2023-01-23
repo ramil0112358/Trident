@@ -60,7 +60,7 @@ def test_demo_l3_basic_fixture(init_environment_instances):
 
     dut_new_config_path = \
         "/home/ramil/PycharmProjects/trident/Tests/DemoTests/Configs/test_demo_l3_basic/test_demo_l3_basic_initial_config"
-    '''
+
     topology_manager.init_topology_node('tr1_console',
                                         module_manager,
                                         True,  # <-clear config
@@ -69,7 +69,7 @@ def test_demo_l3_basic_fixture(init_environment_instances):
                                         None,#dut_software_image_path,
                                         dut_new_config_path,
                                         True)  # <-logout session
-    '''
+
     # Ixia launch
     ixia_instance = Ixia("10.27.152.3", "11009", "admin", "admin")
     core.ixia = ixia_instance
